@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TETRIS NEON - Portrait Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;600;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100dvh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .font-cyber {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Khung màn hình dọc chuẩn */
+        .app-container {
+            width: 100%;
+            max-width: 430px;
+            height: 100dvh;
+            max-height: 920px;
+            background: radial-gradient(circle at 50% 20%, #0d101d 0%, #030305 70%, #000000 100%);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-left: 1px solid rgba(0, 240, 255, 0.15);
+            border-right: 1px solid rgba(0, 240, 255, 0.15);
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.12);
+            overflow: hidden;
+        }
+
+        /* Hiệu ứng thẻ Menu Neon */
+        .mode-card {
+            background: rgba(15, 19, 34, 0.85);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .mode-card:hover {
+            transform: translateY(-2px);
+        }
+        .mode-card:active {
+            transform: scale(0.98);
+        }
+
+        .card-classic:hover { border-color: #00f0ff; box-shadow: 0 0 18px rgba(0, 240, 255, 0.35); }
+        .card-challenge:hover { border-color: #a855f7; box-shadow: 0 0 18px rgba(168, 85, 247, 0.35); }
+        .card-time:hover { border-color: #f59e0b; box-shadow: 0 0 18px rgba(245, 158, 11, 0.35); }
+        .card-guide:hover { border-color: #10b981; box-shadow: 0 0 18px rgba(16, 185, 129, 0.35); }
+
+        /* Nút điều khiển Arcade */
+        .control-btn {
+            background: linear-gradient(145deg, #161b2e, #090b14);
+            border: 2px solid rgba(0, 240, 255, 0.35);
+            box-shadow: 0 5px 0 #04050a, 0 0 12px rgba(0, 240, 255, 0.15);
+            transition: transform 0.05s ease, box-shadow 0.05s ease, border-color 0.05s ease;
+            touch-action: none;
+        }
+        .control-btn:active, .control-btn.active-press {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #04050a, 0 0 22px rgba(0, 240, 255, 0.65);
+            border-color: #00f0ff;
+            background: linear-gradient(145deg, #1e2742, #0f1424);
+        }
+
+        .control-btn-up {
+            border-color: rgba(168, 85, 247, 0.45);
+            box-shadow: 0 5px 0 #04050a, 0 0 12px rgba(168, 85, 247, 0.15);
+        }
+        .control-btn-up:active, .control-btn-up.active-press {
+            border-color: #c084fc;
+            box-shadow: 0 1px 0 #04050a, 0 0 24px rgba(168, 85, 247, 0.75);
+        }
+
+        .control-btn-down {
+            border-color: rgba(245, 158, 11, 0.45);
+            box-shadow: 0 5px 0 #04050a, 0 0 12px rgba(245, 158, 11, 0.15);
+        }
+        .control-btn-down:active, .control-btn-down.active-press {
+            border-color: #fbbf24;
+            box-shadow: 0 1px 0 #04050a, 0 0 24px rgba(245, 158, 11, 0.75);
+        }
+
+        /* Bảng Canvas */
+        #game-canvas {
+            background-color: #030408;
+            border: 2px solid #1e293b;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9), 0 0 15px rgba(0, 240, 255, 0.12);
+            border-radius: 6px;
+            display: block;
+        }
+
+        /* Custom Range Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 10px;
+            cursor: pointer;
+            background: #1e293b;
+            border-radius: 5px;
+            border: 1px solid #334155;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 26px;
+            width: 26px;
+            border-radius: 50%;
+            background: #00f0ff;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -9px;
+            box-shadow: 0 0 12px #00f0ff;
+        }
+
+        /* Thanh cuộn tinh gọn cho Modal */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090b10;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container" id="app">
+
+    <!-- ==================== 1. MÀN HÌNH CHÍNH (INDEX / MAIN MENU) ==================== -->
+    <div id="menu-screen" class="flex flex-col justify-between h-full p-5 z-10">
+        <!-- Header Logo -->
+        <div class="text-center mt-2">
+            <div class="inline-block px-3 py-0.5 rounded-full bg-cyan-950/60 border border-cyan-500/40 text-cyan-300 text-[11px] font-semibold tracking-widest uppercase mb-1">
+                Portrait Arcade System
+            </div>
+            <h1 class="font-cyber text-4xl sm:text-5xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 drop-shadow-[0_0_15px_rgba(0,240,255,0.4)]">
+                TETRIS
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Lưới trực quan • Đè nút siêu tốc 20ms • Lv 1–99</p>
+        </div>
+
+        <!-- 4 Ô Lựa Chọn Chế Độ -->
+        <div class="grid grid-cols-1 gap-3 my-auto py-2">
+            <!-- Ô 1: Classic Mode -->
+            <button onclick="startClassicMode()" class="mode-card card-classic rounded-2xl p-4 text-left flex items-center gap-4 group">
+                <div class="w-12 h-12 rounded-xl bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center text-cyan-400 text-2xl shrink-0 group-hover:scale-110 transition">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                        <span class="font-cyber font-bold text-base text-cyan-300">1. CLASSIC MODE</span>
+                        <span class="text-[10px] font-semibold bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-md border border-cyan-500/30">Lv 1 ➔ 99</span>
+                    </div>
+                    <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                        Tốc độ rơi tăng theo Lv. Lv càng cao cộng càng nhiều điểm. Cứ mỗi <span class="text-cyan-300 font-semibold">500 điểm +1 Lv</span>.
+                    </p>
+                </div>
+            </button>
+
+            <!-- Ô 2: Challenge Mode -->
+            <button onclick="openLevelSelector('challenge')" class="mode-card card-challenge rounded-2xl p-4 text-left flex items-center gap-4 group">
+                <div class="w-12 h-12 rounded-xl bg-purple-500/15 border border-purple-400/40 flex items-center justify-center text-purple-400 text-2xl shrink-0 group-hover:scale-110 transition">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                        <span class="font-cyber font-bold text-base text-purple-300">2. CHALLENGE MODE</span>
+                        <span class="text-[10px] font-semibold bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-md border border-purple-500/30">Tự chọn Lv</span>
+                    </div>
+                    <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                        Tự chọn Level khởi đầu từ <span class="text-purple-300 font-semibold">Lv 1 đến Lv 99</span> để thử thách phản xạ tốc độ cao.
+                    </p>
+                </div>
+            </button>
+
+            <!-- Ô 3: Time Mode -->
+            <button onclick="openLevelSelector('time')" class="mode-card card-time rounded-2xl p-4 text-left flex items-center gap-4 group">
+                <div class="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-400/40 flex items-center justify-center text-amber-400 text-2xl shrink-0 group-hover:scale-110 transition">
+                    <i class="fa-solid fa-stopwatch"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                        <span class="font-cyber font-bold text-base text-amber-300">3. TIME MODE</span>
+                        <span class="text-[10px] font-semibold bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-md border border-amber-500/30">10 Phút</span>
+                    </div>
+                    <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                        Tự chọn Level (1–99) và đua điểm tối đa trong giới hạn đúng <span class="text-amber-300 font-semibold">10:00 phút</span>.
+                    </p>
+                </div>
+            </button>
+
+            <!-- Ô 4: Kỷ lục & Hướng dẫn -->
+            <button onclick="openGuideModal()" class="mode-card card-guide rounded-2xl p-4 text-left flex items-center gap-4 group">
+                <div class="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-400/40 flex items-center justify-center text-emerald-400 text-2xl shrink-0 group-hover:scale-110 transition">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                        <span class="font-cyber font-bold text-base text-emerald-300">4. KỶ LỤC & LUẬT CHƠI</span>
+                        <span class="text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-md border border-emerald-500/30">High Scores</span>
+                    </div>
+                    <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                        Xem bảng điểm cao nhất của 3 chế độ và chi tiết cơ chế tính điểm, đè nút.
+                    </p>
+                </div>
+            </button>
+        </div>
+
+        <!-- Thanh tóm tắt Kỷ lục dưới đáy Menu -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-2.5 grid grid-cols-3 gap-2 text-center">
+            <div>
+                <div class="text-[10px] text-cyan-400 uppercase font-semibold">Classic Best</div>
+                <div id="menu-best-classic" class="font-cyber text-sm font-bold text-white">0</div>
+            </div>
+            <div class="border-x border-slate-800">
+                <div class="text-[10px] text-purple-400 uppercase font-semibold">Challenge Best</div>
+                <div id="menu-best-challenge" class="font-cyber text-sm font-bold text-white">0</div>
+            </div>
+            <div>
+                <div class="text-[10px] text-amber-400 uppercase font-semibold">Time Best</div>
+                <div id="menu-best-time" class="font-cyber text-sm font-bold text-white">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 2. MÀN HÌNH CHƠI GAME (GAME SCREEN) ==================== -->
+    <div id="game-screen" class="hidden flex-col justify-between h-full w-full p-2.5 sm:p-3 select-none z-10">
+        
+        <!-- Top Header: Tên Chế Độ, Đồng hồ 10p & Nút Pause ở góc trên phải -->
+        <div class="flex items-center justify-between bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-1.5 shrink-0">
+            <div class="flex items-center gap-2">
+                <span id="hud-mode-badge" class="px-2 py-0.5 text-[10px] font-cyber font-bold rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                    CLASSIC
+                </span>
+                <!-- Đồng hồ đếm ngược 10:00 (Hiện khi chơi Time Mode) -->
+                <div id="hud-timer-box" class="hidden items-center gap-1.5 bg-amber-500/20 border border-amber-500/50 px-2.5 py-0.5 rounded-md">
+                    <i class="fa-regular fa-clock text-amber-400 text-xs animate-pulse"></i>
+                    <span id="hud-timer" class="font-cyber font-bold text-xs text-amber-300">10:00</span>
+                </div>
+            </div>
+
+            <!-- Nút Pause ở góc trên phải màn hình -->
+            <button id="btn-pause" onclick="pauseGame()" class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-cyan-300 border border-cyan-500/40 rounded-lg px-3 py-1.5 text-xs font-cyber font-bold shadow-[0_0_10px_rgba(0,240,255,0.2)] transition">
+                <i class="fa-solid fa-pause"></i>
+                <span>PAUSE</span>
+            </button>
+        </div>
+
+        <!-- Khu vực Giữa: Bảng chơi có lưới + Cột thông tin bên phải -->
+        <div class="flex-1 flex items-center justify-center gap-2.5 my-1.5 min-h-0 overflow-hidden">
+            
+            <!-- Bảng Canvas Chính (10x20) có kẻ ô lưới -->
+            <div class="h-full flex items-center justify-center">
+                <canvas id="game-canvas" width="240" height="480"></canvas>
+            </div>
+
+            <!-- Cột phải: Ô Next Block + Score + Level + Lines -->
+            <div class="w-28 sm:w-32 flex flex-col justify-between h-full max-h-[480px] gap-2">
+                
+                <!-- Ô hiển thị Block tiếp theo -->
+                <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 flex flex-col items-center shadow-inner">
+                    <span class="text-[10px] font-cyber tracking-wider text-cyan-400 uppercase font-bold mb-1">NEXT BLOCK</span>
+                    <div class="bg-[#030408] border border-slate-800 rounded-lg p-1 flex items-center justify-center w-20 h-20">
+                        <canvas id="next-canvas" width="76" height="76"></canvas>
+                    </div>
+                </div>
+
+                <!-- Thông số Điểm (Score) -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 text-center">
+                    <div class="text-[10px] text-slate-400 uppercase font-semibold tracking-wider">SCORE</div>
+                    <div id="hud-score" class="font-cyber text-base sm:text-lg font-extrabold text-white mt-0.5 truncate">0</div>
+                    <div id="hud-next-lv-hint" class="text-[9px] text-cyan-400/80 mt-0.5">+1 Lv mỗi 500đ</div>
+                </div>
+
+                <!-- Thông số Level (1 - 99) -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 text-center">
+                    <div class="text-[10px] text-slate-400 uppercase font-semibold tracking-wider">LEVEL</div>
+                    <div class="flex items-baseline justify-center gap-1 mt-0.5">
+                        <span id="hud-level" class="font-cyber text-xl font-black text-cyan-400">1</span>
+                        <span class="text-[10px] text-slate-500 font-cyber">/ 99</span>
+                    </div>
+                    <div id="hud-speed-ms" class="text-[9px] text-slate-400 mt-0.5">Tốc độ: 800ms</div>
+                </div>
+
+                <!-- Thông số Hàng đã phá (Lines) -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 text-center">
+                    <div class="text-[10px] text-slate-400 uppercase font-semibold tracking-wider">LINES</div>
+                    <div id="hud-lines" class="font-cyber text-base font-bold text-emerald-400 mt-0.5">0</div>
+                </div>
+
+                <!-- Chế độ Tăng Lv trong Challenge/Time -->
+                <div id="hud-level-lock-info" class="bg-slate-950/90 border border-slate-800/80 rounded-lg px-2 py-1.5 text-center">
+                    <div class="text-[9px] text-slate-400 leading-tight">
+                        Giữ nút: <span class="text-cyan-300 font-semibold">20ms/lần</span>
+                    </div>
+                    <div class="text-[9px] text-amber-300/90 leading-tight mt-0.5 font-semibold">
+                        SPACE: Rớt ngay
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Khu vực Đáy: 4 Nút Điều Khiển (Trái, Phải, Lên = Đổi hướng, Xuống = Chạy nhanh) -->
+        <div class="bg-slate-950/90 border border-slate-800/90 rounded-2xl p-2.5 shrink-0">
+            <div class="grid grid-cols-4 gap-2.5 h-20 sm:h-24">
+                
+                <!-- Mũi tên Trái -->
+                <button id="btn-left" class="control-btn rounded-xl flex flex-col items-center justify-center text-cyan-300" aria-label="Sang Trái">
+                    <i class="fa-solid fa-caret-left text-3xl sm:text-4xl"></i>
+                    <span class="text-[10px] font-bold tracking-wider uppercase text-slate-300 mt-0.5">TRÁI (A)</span>
+                </button>
+
+                <!-- Mũi tên Xuống (Chạy nhanh) -->
+                <button id="btn-down" class="control-btn control-btn-down rounded-xl flex flex-col items-center justify-center text-amber-300" aria-label="Chạy Nhanh">
+                    <i class="fa-solid fa-caret-down text-3xl sm:text-4xl"></i>
+                    <span class="text-[10px] font-bold tracking-wider uppercase text-amber-200 mt-0.5">NHANH (S)</span>
+                </button>
+
+                <!-- Mũi tên Lên (Chuyển hướng / Xoay) -->
+                <button id="btn-up" class="control-btn control-btn-up rounded-xl flex flex-col items-center justify-center text-purple-300" aria-label="Chuyển Hướng">
+                    <i class="fa-solid fa-caret-up text-3xl sm:text-4xl"></i>
+                    <span class="text-[10px] font-bold tracking-wider uppercase text-purple-200 mt-0.5">XOAY (W)</span>
+                </button>
+
+                <!-- Mũi tên Phải -->
+                <button id="btn-right" class="control-btn rounded-xl flex flex-col items-center justify-center text-cyan-300" aria-label="Sang Phải">
+                    <i class="fa-solid fa-caret-right text-3xl sm:text-4xl"></i>
+                    <span class="text-[10px] font-bold tracking-wider uppercase text-slate-300 mt-0.5">PHẢI (D)</span>
+                </button>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 3. POP-UP CHỌN LEVEL (CHO CHALLENGE & TIME MODE) ==================== -->
+    <div id="level-select-modal" class="hidden absolute inset-0 bg-black/85 backdrop-blur-sm z-30 flex items-center justify-center p-5">
+        <div class="bg-slate-900 border-2 border-cyan-500/50 rounded-2xl p-5 w-full max-w-sm shadow-[0_0_30px_rgba(0,240,255,0.25)]">
+            <div class="flex items-center justify-between mb-3">
+                <h2 id="modal-mode-title" class="font-cyber text-lg font-bold text-cyan-300">CHỌN LEVEL BẮT ĐẦU</h2>
+                <button onclick="closeLevelSelector()" class="text-slate-400 hover:text-white text-lg px-2">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <p id="modal-mode-desc" class="text-xs text-slate-300 mb-4 leading-relaxed">
+                Chọn tốc độ Level từ 1 đến 99. Level càng cao khối gạch rơi càng nhanh và điểm thưởng mỗi hàng càng lớn!
+            </p>
+
+            <!-- Hiển thị Level đang chọn -->
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-center mb-4">
+                <div class="text-xs text-slate-400 uppercase">Level Khởi Đầu</div>
+                <div id="selected-level-display" class="font-cyber text-5xl font-black text-cyan-400 my-1">1</div>
+                <div id="selected-level-speed" class="text-xs text-amber-300 font-medium">Tốc độ rơi: 800ms / ô</div>
+            </div>
+
+            <!-- Thanh trượt + Nút +/- -->
+            <div class="flex items-center gap-3 mb-4">
+                <button onclick="adjustSelectedLevel(-1)" class="w-10 h-10 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold text-lg border border-slate-700">-</button>
+                <input id="level-slider" type="range" min="1" max="99" value="1" oninput="onSliderChange(this.value)">
+                <button onclick="adjustSelectedLevel(1)" class="w-10 h-10 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold text-lg border border-slate-700">+</button>
+            </div>
+
+            <!-- Các nút chọn nhanh mốc Level -->
+            <div class="grid grid-cols-5 gap-1.5 mb-4">
+                <button onclick="setQuickLevel(1)" class="py-1.5 text-xs font-cyber bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 text-slate-200">Lv 1</button>
+                <button onclick="setQuickLevel(20)" class="py-1.5 text-xs font-cyber bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 text-slate-200">Lv 20</button>
+                <button onclick="setQuickLevel(50)" class="py-1.5 text-xs font-cyber bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 text-slate-200">Lv 50</button>
+                <button onclick="setQuickLevel(80)" class="py-1.5 text-xs font-cyber bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 text-slate-200">Lv 80</button>
+                <button onclick="setQuickLevel(99)" class="py-1.5 text-xs font-cyber bg-rose-950/80 hover:bg-rose-900 rounded border border-rose-500/40 text-rose-300 font-bold">Lv 99</button>
+            </div>
+
+            <!-- Tuỳ chọn tăng Level mỗi 500 điểm hay giữ cố định Level đã chọn -->
+            <label class="flex items-center gap-2.5 bg-slate-950/90 border border-slate-800 rounded-xl p-3 mb-5 cursor-pointer">
+                <input id="chk-auto-levelup" type="checkbox" checked class="w-4 h-4 accent-cyan-400 rounded">
+                <span class="text-xs text-slate-300">Tự động +1 Level mỗi 500 điểm (tối đa Lv 99)</span>
+            </label>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="closeLevelSelector()" class="py-3 rounded-xl font-cyber text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700">
+                    HUỶ BỎ
+                </button>
+                <button onclick="confirmStartSelectedMode()" class="py-3 rounded-xl font-cyber text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black shadow-[0_0_15px_rgba(0,240,255,0.4)]">
+                    BẮT ĐẦU CHƠI
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 4. POP-UP TẠM DỪNG (PAUSE MODAL: RESUME, RESTART, QUIT) ==================== -->
+    <div id="pause-modal" class="hidden absolute inset-0 bg-black/85 backdrop-blur-sm z-40 flex items-center justify-center p-6">
+        <div class="bg-slate-900 border-2 border-cyan-500/50 rounded-2xl p-6 w-full max-w-xs text-center shadow-[0_0_35px_rgba(0,240,255,0.3)]">
+            <div class="w-14 h-14 rounded-full bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center mx-auto mb-3 text-cyan-400 text-2xl">
+                <i class="fa-solid fa-pause"></i>
+            </div>
+            <h2 class="font-cyber text-2xl font-black text-white tracking-wider">TẠM DỪNG</h2>
+            <p class="text-xs text-slate-400 mt-1 mb-6">Trò chơi đang được tạm ngưng</p>
+
+            <div class="flex flex-col gap-3">
+                <button onclick="resumeGame()" class="w-full py-3.5 rounded-xl font-cyber font-bold text-sm bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-[0_0_15px_rgba(0,240,255,0.4)] active:scale-95 transition">
+                    <i class="fa-solid fa-play mr-1.5"></i> RESUME (TIẾP TỤC)
+                </button>
+                <button onclick="restartGame()" class="w-full py-3.5 rounded-xl font-cyber font-bold text-sm bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/40 active:scale-95 transition">
+                    <i class="fa-solid fa-rotate-right mr-1.5"></i> RESTART (CHƠI LẠI)
+                </button>
+                <button onclick="quitToMenu()" class="w-full py-3.5 rounded-xl font-cyber font-bold text-sm bg-slate-800 hover:bg-rose-950/60 text-rose-400 border border-rose-500/40 active:scale-95 transition">
+                    <i class="fa-solid fa-right-from-bracket mr-1.5"></i> QUIT (THOÁT RA MENU)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 5. POP-UP KẾT THÚC (GAME OVER / HẾT GIỜ 10 PHÚT) ==================== -->
+    <div id="gameover-modal" class="hidden absolute inset-0 bg-black/90 backdrop-blur-md z-40 flex items-center justify-center p-6">
+        <div class="bg-slate-900 border-2 border-rose-500/50 rounded-2xl p-6 w-full max-w-xs text-center shadow-[0_0_35px_rgba(244,63,94,0.3)]">
+            <div id="gameover-icon" class="w-14 h-14 rounded-full bg-rose-500/15 border border-rose-400/40 flex items-center justify-center mx-auto mb-3 text-rose-400 text-2xl">
+                <i class="fa-solid fa-skull"></i>
+            </div>
+            <h2 id="gameover-title" class="font-cyber text-2xl font-black text-white tracking-wider">GAME OVER</h2>
+            <p id="gameover-subtitle" class="text-xs text-slate-400 mt-1 mb-4">Khối gạch đã chạm đỉnh màn hình!</p>
+
+            <!-- Bảng tóm tắt kết quả -->
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 mb-5 space-y-2 text-xs">
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-400">Điểm đạt được:</span>
+                    <span id="final-score" class="font-cyber text-base font-extrabold text-cyan-400">0</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-400">Level đạt tới:</span>
+                    <span id="final-level" class="font-cyber font-bold text-purple-300">1</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-400">Số hàng đã phá:</span>
+                    <span id="final-lines" class="font-cyber font-bold text-emerald-400">0</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <button onclick="restartGame()" class="w-full py-3.5 rounded-xl font-cyber font-bold text-sm bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-[0_0_15px_rgba(0,240,255,0.4)] active:scale-95 transition">
+                    <i class="fa-solid fa-rotate-right mr-1.5"></i> RESTART (CHƠI LẠI)
+                </button>
+                <button onclick="quitToMenu()" class="w-full py-3.5 rounded-xl font-cyber font-bold text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 active:scale-95 transition">
+                    <i class="fa-solid fa-house mr-1.5"></i> QUIT (VỀ MÀN HÌNH CHÍNH)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 6. POP-UP KỶ LỤC & HƯỚNG DẪN (Ô THỨ 4) ==================== -->
+    <div id="guide-modal" class="hidden absolute inset-0 bg-black/85 backdrop-blur-sm z-30 flex items-center justify-center p-5">
+        <div class="bg-slate-900 border-2 border-emerald-500/50 rounded-2xl p-5 w-full max-w-sm max-h-[85dvh] flex flex-col shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+            <div class="flex items-center justify-between mb-3 shrink-0">
+                <h2 class="font-cyber text-base font-bold text-emerald-300">
+                    <i class="fa-solid fa-trophy mr-1.5"></i> KỶ LỤC & HƯỚNG DẪN
+                </h2>
+                <button onclick="closeGuideModal()" class="text-slate-400 hover:text-white text-lg px-2">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="overflow-y-auto space-y-3 pr-1 text-xs text-slate-300 flex-1">
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3">
+                    <div class="font-cyber text-amber-300 font-bold mb-2">KỶ LỤC ĐIỂM CAO NHẤT</div>
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between"><span>Classic Mode:</span><span id="guide-best-classic" class="font-cyber text-cyan-400 font-bold">0</span></div>
+                        <div class="flex justify-between"><span>Challenge Mode:</span><span id="guide-best-challenge" class="font-cyber text-purple-400 font-bold">0</span></div>
+                        <div class="flex justify-between"><span>Time Mode (10p):</span><span id="guide-best-time" class="font-cyber text-amber-400 font-bold">0</span></div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-1.5">
+                    <div class="font-cyber text-cyan-300 font-bold">CƠ CHẾ LEVEL & ĐIỂM SỐ</div>
+                    <p>• Hệ thống từ <strong>Lv 1 đến Lv 99</strong>: Level càng cao tốc độ rơi tự động của khối gạch càng nhanh.</p>
+                    <p>• Điểm thưởng khi phá hàng được nhân hệ số theo Level hiện tại (Phá 1, 2, 3, 4 hàng cùng lúc nhận thưởng lớn).</p>
+                    <p>• Cứ mỗi <strong>500 điểm</strong> người chơi sẽ được <strong>+1 Level</strong> (tối đa Lv 99).</p>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-1.5">
+                    <div class="font-cyber text-purple-300 font-bold">ĐIỀU KHIỂN & ĐÈ NÚT 20MS</div>
+                    <p>• <strong>Mũi tên Trái / Phải (hoặc A / D):</strong> Dịch chuyển khối gạch ngang.</p>
+                    <p>• <strong>Mũi tên Lên (hoặc W):</strong> Chuyển hướng (Xoay khối gạch).</p>
+                    <p>• <strong>Mũi tên Xuống (hoặc S):</strong> Chạy nhanh xuống (cộng thêm điểm rơi nhanh).</p>
+                    <p>• <strong>Phím SPACE (Cách):</strong> Rớt xuống đáy ngay lập tức (Skip / Hard Drop).</p>
+                    <p>• <strong>Đè nút (Hold to spam):</strong> Cả 4 nút trên màn hình, phím Mũi tên và cụm phím <strong>WASD</strong> đều hỗ trợ nhấn giữ với tốc độ lặp siêu nhanh <strong>20ms</strong>.</p>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-2 border-t border-slate-800 flex gap-2 shrink-0">
+                <button onclick="resetHighScores()" class="px-3 py-2.5 rounded-xl font-cyber text-[11px] font-bold bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 border border-rose-500/40">
+                    XOÁ KỶ LỤC
+                </button>
+                <button onclick="closeGuideModal()" class="flex-1 py-2.5 rounded-xl font-cyber text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950">
+                    ĐÃ HIỂU
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // ==================== CẤU HÌNH BẢNG CHƠI & KHỐI TETROMINO ====================
+    const COLS = 10;
+    const ROWS = 20;
+    const BLOCK_SIZE = 24; // 10 * 24 = 240px width, 20 * 24 = 480px height
+
+    const canvas = document.getElementById('game-canvas');
+    const ctx = canvas.getContext('2d');
+    const nextCanvas = document.getElementById('next-canvas');
+    const nextCtx = nextCanvas.getContext('2d');
+
+    // Màu sắc Neon tương phản cao trên nền đen
+    const COLORS = [
+        null,
+        '#00f0ff', // I - Cyan Neon
+        '#fde047', // O - Yellow Neon
+        '#c084fc', // T - Purple Neon
+        '#4ade80', // S - Green Neon
+        '#fb7185', // Z - Rose/Red Neon
+        '#60a5fa', // J - Blue Neon
+        '#fb923c'  // L - Orange Neon
+    ];
+
+    // Ma trận 7 khối chuẩn
+    const SHAPES = [
+        [],
+        [[0,0,0,0], [1,1,1,1], [0,0,0,0], [0,0,0,0]], // I
+        [[2,2], [2,2]],                                 // O
+        [[0,3,0], [3,3,3], [0,0,0]],                   // T
+        [[0,4,4], [4,4,0], [0,0,0]],                   // S
+        [[5,5,0], [0,5,5], [0,0,0]],                   // Z
+        [[6,0,0], [6,6,6], [0,0,0]],                   // J
+        [[0,0,7], [7,7,7], [0,0,0]]                    // L
+    ];
+
+    // ==================== BIẾN TRẠNG THÁI TRÒ CHƠI ====================
+    let board = [];
+    let currentPiece = null;
+    let nextPiece = null;
+
+    let score = 0;
+    let lines = 0;
+    let level = 1;
+    let startLevel = 1;
+    let gameMode = 'classic'; // 'classic' | 'challenge' | 'time'
+    let autoLevelUp = true;   // Tự động +1 Lv mỗi 500 điểm
+
+    let isRunning = false;
+    let isPaused = false;
+    let isGameOver = false;
+
+    // Biến vòng lặp thời gian rơi
+    let dropCounter = 0;
+    let lastTime = 0;
+    let animationFrameId = null;
+
+    // Biến đồng hồ đếm ngược 10 phút (600 giây) cho Time Mode
+    let timeRemainingMs = 600 * 1000;
+
+    // Lưu trữ kỷ lục trong LocalStorage
+    let highScores = {
+        classic: parseInt(localStorage.getItem('tetris_best_classic') || '0', 10),
+        challenge: parseInt(localStorage.getItem('tetris_best_challenge') || '0', 10),
+        time: parseInt(localStorage.getItem('tetris_best_time') || '0', 10)
+    };
+
+    // ==================== CÔNG THỨC TỐC ĐỘ RƠI THEO LEVEL (1 -> 99) ====================
+    // Lv 1: ~800ms | Lv 50: ~220ms | Lv 99: 35ms (càng cao rơi càng nhanh)
+    function getDropInterval(lv) {
+        const clampedLv = Math.max(1, Math.min(99, lv));
+        // Đường cong giảm mượt từ 800ms xuống 35ms
+        const ms = Math.round(35 + 765 * Math.pow((99 - clampedLv) / 98, 1.65));
+        return Math.max(30, ms);
+    }
+
+    // ==================== KHỞI TẠO & QUẢN LÝ MẢNG BẢNG CHƠI ====================
+    function createMatrix(w, h) {
+        const matrix = [];
+        while (h--) {
+            matrix.push(new Array(w).fill(0));
+        }
+        return matrix;
+    }
+
+    function createRandomPiece() {
+        const typeId = Math.floor(Math.random() * 7) + 1;
+        const matrix = SHAPES[typeId].map(row => [...row]);
+        return {
+            matrix: matrix,
+            typeId: typeId,
+            x: Math.floor(COLS / 2) - Math.ceil(matrix[0].length / 2),
+            y: 0
+        };
+    }
+
+    // ==================== VẼ LƯỚI (GRID) & KHỐI GẠCH TRÊN MÀN HÌNH ĐEN ====================
+    function drawGrid() {
+        // Nền đen sâu
+        ctx.fillStyle = '#030408';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Vẽ lưới (Grid) rõ ràng giúp người chơi dễ căn cột & hàng
+        ctx.strokeStyle = 'rgba(0, 240, 255, 0.13)';
+        ctx.lineWidth = 1;
+
+        // Đường kẻ dọc
+        for (let x = 0; x <= COLS; x++) {
+            ctx.beginPath();
+            ctx.moveTo(x * BLOCK_SIZE + 0.5, 0);
+            ctx.lineTo(x * BLOCK_SIZE + 0.5, canvas.height);
+            ctx.stroke();
+        }
+
+        // Đường kẻ ngang
+        for (let y = 0; y <= ROWS; y++) {
+            ctx.beginPath();
+            ctx.moveTo(0, y * BLOCK_SIZE + 0.5);
+            ctx.lineTo(canvas.width, y * BLOCK_SIZE + 0.5);
+            ctx.stroke();
+        }
+
+        // Chấm nhỏ tại giao điểm lưới để tăng độ trực quan
+        ctx.fillStyle = 'rgba(0, 240, 255, 0.24)';
+        for (let x = 1; x < COLS; x++) {
+            for (let y = 1; y < ROWS; y++) {
+                ctx.fillRect(x * BLOCK_SIZE - 0.5, y * BLOCK_SIZE - 0.5, 1.5, 1.5);
+            }
+        }
+    }
+
+    function drawSingleBlock(context, x, y, colorId, size = BLOCK_SIZE, isGhost = false) {
+        const px = x * size;
+        const py = y * size;
+        const color = COLORS[colorId];
+
+        if (isGhost) {
+            context.save();
+            context.strokeStyle = color;
+            context.lineWidth = 1.5;
+            context.fillStyle = 'rgba(255, 255, 255, 0.06)';
+            context.fillRect(px + 2, py + 2, size - 4, size - 4);
+            context.strokeRect(px + 2, py + 2, size - 4, size - 4);
+            context.restore();
+            return;
+        }
+
+        context.save();
+        // Thân khối gạch
+        context.fillStyle = color;
+        context.fillRect(px + 1, py + 1, size - 2, size - 2);
+
+        // Viền sáng 3D bên trên/trái
+        context.fillStyle = 'rgba(255, 255, 255, 0.35)';
+        context.fillRect(px + 1, py + 1, size - 2, 3);
+        context.fillRect(px + 1, py + 1, 3, size - 2);
+
+        // Viền tối bên dưới/phải
+        context.fillStyle = 'rgba(0, 0, 0, 0.35)';
+        context.fillRect(px + 1, py + size - 4, size - 2, 3);
+        context.fillRect(px + size - 4, py + 1, 3, size - 2);
+
+        // Lõi trong tạo chiều sâu
+        context.strokeStyle = 'rgba(255,255,255,0.25)';
+        context.lineWidth = 1;
+        context.strokeRect(px + 4, py + 4, size - 8, size - 8);
+        context.restore();
+    }
+
+    // Tính vị trí bóng mờ (Ghost Piece) giúp dễ nhìn điểm rơi
+    function getGhostY() {
+        if (!currentPiece) return 0;
+        let testY = currentPiece.y;
+        while (!collide(board, { ...currentPiece, y: testY + 1 })) {
+            testY++;
+        }
+        return testY;
+    }
+
+    function drawBoardAndPiece() {
+        drawGrid();
+
+        // Vẽ các khối đã cố định trên bảng
+        for (let y = 0; y < ROWS; y++) {
+            for (let x = 0; x < COLS; x++) {
+                if (board[y][x] !== 0) {
+                    drawSingleBlock(ctx, x, y, board[y][x]);
+                }
+            }
+        }
+
+        if (currentPiece) {
+            // Vẽ bóng mờ (Ghost block)
+            const ghostY = getGhostY();
+            currentPiece.matrix.forEach((row, dy) => {
+                row.forEach((value, dx) => {
+                    if (value !== 0) {
+                        drawSingleBlock(ctx, currentPiece.x + dx, ghostY + dy, value, BLOCK_SIZE, true);
+                    }
+                });
+            });
+
+            // Vẽ khối đang rơi
+            currentPiece.matrix.forEach((row, dy) => {
+                row.forEach((value, dx) => {
+                    if (value !== 0) {
+                        drawSingleBlock(ctx, currentPiece.x + dx, currentPiece.y + dy, value, BLOCK_SIZE, false);
+                    }
+                });
+            });
+        }
+    }
+
+    // Vẽ ô Next Block
+    function drawNextPreview() {
+        nextCtx.fillStyle = '#030408';
+        nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
+
+        // Vẽ lưới nhỏ trong ô Next
+        nextCtx.strokeStyle = 'rgba(0, 240, 255, 0.1)';
+        nextCtx.lineWidth = 1;
+        const previewSize = 16;
+        for (let i = 0; i <= 4; i++) {
+            nextCtx.beginPath();
+            nextCtx.moveTo(i * previewSize + 6, 6);
+            nextCtx.lineTo(i * previewSize + 6, 70);
+            nextCtx.stroke();
+
+            nextCtx.beginPath();
+            nextCtx.moveTo(6, i * previewSize + 6);
+            nextCtx.lineTo(70, i * previewSize + 6);
+            nextCtx.stroke();
+        }
+
+        if (!nextPiece) return;
+
+        const m = nextPiece.matrix;
+        const offsetX = (nextCanvas.width - m[0].length * previewSize) / 2;
+        const offsetY = (nextCanvas.height - m.length * previewSize) / 2;
+
+        m.forEach((row, y) => {
+            row.forEach((val, x) => {
+                if (val !== 0) {
+                    const px = offsetX + x * previewSize;
+                    const py = offsetY + y * previewSize;
+                    nextCtx.fillStyle = COLORS[val];
+                    nextCtx.fillRect(px + 1, py + 1, previewSize - 2, previewSize - 2);
+                    nextCtx.fillStyle = 'rgba(255,255,255,0.35)';
+                    nextCtx.fillRect(px + 1, py + 1, previewSize - 2, 2.5);
+                }
+            });
+        });
+    }
+
+    // ==================== LOGIC VA CHẠM, XOAY, DI CHUYỂN & ĂN HÀNG ====================
+    function collide(arena, piece) {
+        const m = piece.matrix;
+        for (let y = 0; y < m.length; y++) {
+            for (let x = 0; x < m[y].length; x++) {
+                if (m[y][x] !== 0) {
+                    const newY = y + piece.y;
+                    const newX = x + piece.x;
+                    if (newX < 0 || newX >= COLS || newY >= ROWS) {
+                        return true;
+                    }
+                    if (newY >= 0 && arena[newY][newX] !== 0) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    function merge(arena, piece) {
+        piece.matrix.forEach((row, y) => {
+            row.forEach((value, x) => {
+                if (value !== 0 && y + piece.y >= 0) {
+                    arena[y + piece.y][x + piece.x] = value;
+                }
+            });
+        });
+    }
+
+    // Xoay ma trận 90 độ theo chiều kim đồng hồ
+    function rotateMatrix(matrix) {
+        const N = matrix.length;
+        const result = matrix.map((row, i) =>
+            row.map((val, j) => matrix[N - 1 - j][i])
+        );
+        return result;
+    }
+
+    // Hành động Mũi tên Lên: Chuyển hướng (Xoay) có hỗ trợ Wall Kick
+    function playerRotate() {
+        if (!isRunning || isPaused || isGameOver || !currentPiece) return;
+        const oldMatrix = currentPiece.matrix;
+        const rotated = rotateMatrix(currentPiece.matrix);
+        currentPiece.matrix = rotated;
+
+        // Xử lý đẩy tường (Wall kick) để không bị kẹt sát vách
+        const kicks = [0, -1, 1, -2, 2];
+        let success = false;
+        const originalX = currentPiece.x;
+
+        for (let offset of kicks) {
+            currentPiece.x = originalX + offset;
+            if (!collide(board, currentPiece)) {
+                success = true;
+                break;
+            }
+        }
+
+        if (!success) {
+            currentPiece.x = originalX;
+            currentPiece.matrix = oldMatrix;
+        }
+        drawBoardAndPiece();
+    }
+
+    // Hành động Mũi tên Trái / Phải
+    function playerMove(dir) {
+        if (!isRunning || isPaused || isGameOver || !currentPiece) return;
+        currentPiece.x += dir;
+        if (collide(board, currentPiece)) {
+            currentPiece.x -= dir;
+        } else {
+            drawBoardAndPiece();
+        }
+    }
+
+    // Kiểm tra và cập nhật Level theo công thức: mỗi 500 điểm +1 Level
+    function updateLevelByScore() {
+        if (gameMode === 'classic' || autoLevelUp) {
+            const bonusLevels = Math.floor(score / 500);
+            const targetLevel = Math.min(99, startLevel + bonusLevels);
+            if (targetLevel > level) {
+                level = targetLevel;
+            }
+        }
+    }
+
+    // Xử lý phá hàng & cộng điểm theo Level
+    function sweepLines() {
+        let rowCount = 0;
+
+        outer: for (let y = ROWS - 1; y >= 0; y--) {
+            for (let x = 0; x < COLS; x++) {
+                if (board[y][x] === 0) {
+                    continue outer;
+                }
+            }
+            const row = board.splice(y, 1)[0].fill(0);
+            board.unshift(row);
+            y++;
+            rowCount++;
+        }
+
+        if (rowCount > 0) {
+            lines += rowCount;
+            // Điểm gốc khi ăn 1, 2, 3, 4 hàng + Hệ số cộng thêm theo Level hiện tại
+            const basePoints = [0, 100, 250, 450, 800];
+            const levelBonusMultiplier = 1 + (level - 1) * 0.15;
+            const earned = Math.round(basePoints[rowCount] * levelBonusMultiplier);
+
+            score += earned;
+            updateLevelByScore();
+            updateHUD();
+        }
+    }
+
+    // Sinh khối tiếp theo
+    function spawnPiece() {
+        if (!nextPiece) {
+            nextPiece = createRandomPiece();
+        }
+        currentPiece = nextPiece;
+        nextPiece = createRandomPiece();
+        drawNextPreview();
+
+        // Nếu vừa xuất hiện đã chạm khối khác -> Game Over
+        if (collide(board, currentPiece)) {
+            triggerGameOver('gameover');
+        }
+    }
+
+    // Khối rơi xuống 1 bước (Tự động hoặc do bấm mũi tên Xuống)
+    function playerDrop(isSoftDrop = false) {
+        if (!isRunning || isPaused || isGameOver || !currentPiece) return;
+
+        currentPiece.y++;
+        if (collide(board, currentPiece)) {
+            currentPiece.y--;
+            merge(board, currentPiece);
+            sweepLines();
+            spawnPiece();
+        } else if (isSoftDrop) {
+            // Chạy nhanh bằng nút Xuống được cộng điểm theo Level
+            score += Math.max(1, Math.floor(level / 10) + 1);
+            updateLevelByScore();
+            updateHUD();
+        }
+
+        dropCounter = 0;
+        drawBoardAndPiece();
+    }
+
+    // Hành động Phím Space: Rớt xuống đáy ngay lập tức (Hard Drop / Skip)
+    function playerHardDrop() {
+        if (!isRunning || isPaused || isGameOver || !currentPiece) return;
+
+        let dropDistance = 0;
+        while (!collide(board, { ...currentPiece, y: currentPiece.y + 1 })) {
+            currentPiece.y++;
+            dropDistance++;
+        }
+
+        // Cộng điểm thưởng khi rớt nhanh bằng Space theo quãng đường và Level
+        if (dropDistance > 0) {
+            score += dropDistance * Math.max(2, Math.floor(level / 8) + 2);
+            updateLevelByScore();
+            updateHUD();
+        }
+
+        merge(board, currentPiece);
+        sweepLines();
+        spawnPiece();
+
+        dropCounter = 0;
+        drawBoardAndPiece();
+    }
+
+    // ==================== CẬP NHẬT GIAO DIỆN THÔNG SỐ (HUD) ====================
+    function formatTime(ms) {
+        const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    function updateHUD() {
+        document.getElementById('hud-score').textContent = score.toLocaleString('vi-VN');
+        document.getElementById('hud-level').textContent = level;
+        document.getElementById('hud-lines').textContent = lines;
+        document.getElementById('hud-speed-ms').textContent = `Tốc độ: ${getDropInterval(level)}ms`;
+
+        // Lưu kỷ lục nếu vượt qua
+        if (score > highScores[gameMode]) {
+            highScores[gameMode] = score;
+            localStorage.setItem(`tetris_best_${gameMode}`, score.toString());
+            refreshMenuBestScores();
+        }
+    }
+
+    function refreshMenuBestScores() {
+        document.getElementById('menu-best-classic').textContent = highScores.classic.toLocaleString('vi-VN');
+        document.getElementById('menu-best-challenge').textContent = highScores.challenge.toLocaleString('vi-VN');
+        document.getElementById('menu-best-time').textContent = highScores.time.toLocaleString('vi-VN');
+
+        document.getElementById('guide-best-classic').textContent = highScores.classic.toLocaleString('vi-VN');
+        document.getElementById('guide-best-challenge').textContent = highScores.challenge.toLocaleString('vi-VN');
+        document.getElementById('guide-best-time').textContent = highScores.time.toLocaleString('vi-VN');
+    }
+
+    // ==================== VÒNG LẶP GAME CHÍNH (GAME LOOP) ====================
+    function gameLoop(time = 0) {
+        if (!isRunning) return;
+
+        const deltaTime = time - lastTime;
+        lastTime = time;
+
+        if (!isPaused && !isGameOver) {
+            dropCounter += deltaTime;
+            const currentInterval = getDropInterval(level);
+
+            if (dropCounter >= currentInterval) {
+                playerDrop(false);
+            }
+
+            // Nếu là Time Mode, đếm ngược 10 phút
+            if (gameMode === 'time') {
+                timeRemainingMs -= deltaTime;
+                document.getElementById('hud-timer').textContent = formatTime(timeRemainingMs);
+
+                if (timeRemainingMs <= 0) {
+                    timeRemainingMs = 0;
+                    document.getElementById('hud-timer').textContent = "00:00";
+                    triggerGameOver('timeup');
+                    return;
+                }
+            }
+        }
+
+        animationFrameId = requestAnimationFrame(gameLoop);
+    }
+
+    // ==================== ĐIỀU HƯỚNG CÁC CHẾ ĐỘ CHƠI ====================
+    let pendingMode = 'challenge';
+    let selectedStartLv = 1;
+
+    // 1. Bắt đầu ngay Classic Mode (Lv 1 -> 99)
+    function startClassicMode() {
+        gameMode = 'classic';
+        startLevel = 1;
+        autoLevelUp = true;
+        initAndStartGame();
+    }
+
+    // 2 & 3. Mở hộp thoại chọn Level cho Challenge Mode hoặc Time Mode
+    function openLevelSelector(mode) {
+        pendingMode = mode;
+        selectedStartLv = 1;
+        document.getElementById('level-slider').value = 1;
+        onSliderChange(1);
+
+        const titleEl = document.getElementById('modal-mode-title');
+        const descEl = document.getElementById('modal-mode-desc');
+
+        if (mode === 'challenge') {
+            titleEl.textContent = 'CHALLENGE MODE - CHỌN LV';
+            descEl.textContent = 'Tự chọn Level khởi đầu (1–99). Thử thách kỹ năng xếp gạch ở tốc độ cao!';
+        } else {
+            titleEl.textContent = 'TIME MODE (10:00) - CHỌN LV';
+            descEl.textContent = 'Tự chọn Level khởi đầu (1–99) và ghi nhiều điểm nhất trong đúng 10 phút!';
+        }
+
+        document.getElementById('level-select-modal').classList.remove('hidden');
+    }
+
+    function closeLevelSelector() {
+        document.getElementById('level-select-modal').classList.add('hidden');
+    }
+
+    function onSliderChange(val) {
+        selectedStartLv = Math.max(1, Math.min(99, parseInt(val, 10) || 1));
+        document.getElementById('selected-level-display').textContent = selectedStartLv;
+        document.getElementById('selected-level-speed').textContent = `Tốc độ rơi: ${getDropInterval(selectedStartLv)}ms / ô`;
+    }
+
+    function adjustSelectedLevel(delta) {
+        const nextVal = Math.max(1, Math.min(99, selectedStartLv + delta));
+        document.getElementById('level-slider').value = nextVal;
+        onSliderChange(nextVal);
+    }
+
+    function setQuickLevel(lv) {
+        document.getElementById('level-slider').value = lv;
+        onSliderChange(lv);
+    }
+
+    function confirmStartSelectedMode() {
+        gameMode = pendingMode;
+        startLevel = selectedStartLv;
+        autoLevelUp = document.getElementById('chk-auto-levelup').checked;
+        closeLevelSelector();
+        initAndStartGame();
+    }
+
+    // Khởi chạy ván chơi mới
+    function initAndStartGame() {
+        stopAllHoldTimers();
+
+        board = createMatrix(COLS, ROWS);
+        score = 0;
+        lines = 0;
+        level = startLevel;
+        isPaused = false;
+        isGameOver = false;
+        isRunning = true;
+        dropCounter = 0;
+        timeRemainingMs = 10 * 60 * 1000; // Đúng 10 phút (600,000 ms)
+
+        // Thiết lập hiển thị Badge và Timer
+        const badge = document.getElementById('hud-mode-badge');
+        const timerBox = document.getElementById('hud-timer-box');
+        const lvHint = document.getElementById('hud-next-lv-hint');
+
+        if (gameMode === 'classic') {
+            badge.textContent = 'CLASSIC MODE';
+            badge.className = 'px-2 py-0.5 text-[10px] font-cyber font-bold rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40';
+            timerBox.classList.add('hidden');
+            timerBox.classList.remove('flex');
+            lvHint.textContent = '+1 Lv mỗi 500đ';
+        } else if (gameMode === 'challenge') {
+            badge.textContent = 'CHALLENGE';
+            badge.className = 'px-2 py-0.5 text-[10px] font-cyber font-bold rounded bg-purple-500/20 text-purple-300 border border-purple-500/40';
+            timerBox.classList.add('hidden');
+            timerBox.classList.remove('flex');
+            lvHint.textContent = autoLevelUp ? '+1 Lv mỗi 500đ' : `Cố định Lv ${startLevel}`;
+        } else if (gameMode === 'time') {
+            badge.textContent = 'TIME MODE';
+            badge.className = 'px-2 py-0.5 text-[10px] font-cyber font-bold rounded bg-amber-500/20 text-amber-300 border border-amber-500/40';
+            timerBox.classList.remove('hidden');
+            timerBox.classList.add('flex');
+            document.getElementById('hud-timer').textContent = '10:00';
+            lvHint.textContent = autoLevelUp ? '+1 Lv mỗi 500đ' : `Cố định Lv ${startLevel}`;
+        }
+
+        // Chuyển màn hình từ Index sang Game Screen
+        document.getElementById('menu-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        document.getElementById('game-screen').classList.add('flex');
+        document.getElementById('pause-modal').classList.add('hidden');
+        document.getElementById('gameover-modal').classList.add('hidden');
+
+        nextPiece = createRandomPiece();
+        spawnPiece();
+        updateHUD();
+        drawBoardAndPiece();
+
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        lastTime = performance.now();
+        animationFrameId = requestAnimationFrame(gameLoop);
+    }
+
+    // ==================== CHỨC NĂNG PAUSE / RESUME / RESTART / QUIT ====================
+    function pauseGame() {
+        if (!isRunning || isGameOver) return;
+        isPaused = true;
+        stopAllHoldTimers();
+        document.getElementById('pause-modal').classList.remove('hidden');
+    }
+
+    function resumeGame() {
+        if (!isRunning || isGameOver) return;
+        isPaused = false;
+        lastTime = performance.now();
+        document.getElementById('pause-modal').classList.add('hidden');
+    }
+
+    function restartGame() {
+        document.getElementById('pause-modal').classList.add('hidden');
+        document.getElementById('gameover-modal').classList.add('hidden');
+        initAndStartGame();
+    }
+
+    function quitToMenu() {
+        isRunning = false;
+        isPaused = false;
+        stopAllHoldTimers();
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+        document.getElementById('pause-modal').classList.add('hidden');
+        document.getElementById('gameover-modal').classList.add('hidden');
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('flex');
+        document.getElementById('menu-screen').classList.remove('hidden');
+        refreshMenuBestScores();
+    }
+
+    function triggerGameOver(reason) {
+        isGameOver = true;
+        isRunning = false;
+        stopAllHoldTimers();
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+        const titleEl = document.getElementById('gameover-title');
+        const subEl = document.getElementById('gameover-subtitle');
+        const iconEl = document.getElementById('gameover-icon');
+
+        if (reason === 'timeup') {
+            titleEl.textContent = 'HẾT GIỜ 10:00!';
+            subEl.textContent = 'Bạn đã hoàn thành 10 phút thử thách Time Mode!';
+            iconEl.innerHTML = '<i class="fa-solid fa-flag-checkered"></i>';
+        } else {
+            titleEl.textContent = 'GAME OVER';
+            subEl.textContent = 'Khối gạch đã chạm đỉnh màn hình!';
+            iconEl.innerHTML = '<i class="fa-solid fa-skull"></i>';
+        }
+
+        document.getElementById('final-score').textContent = score.toLocaleString('vi-VN');
+        document.getElementById('final-level').textContent = level;
+        document.getElementById('final-lines').textContent = lines;
+        document.getElementById('gameover-modal').classList.remove('hidden');
+    }
+
+    // ==================== MODAL HƯỚNG DẪN & KỶ LỤC ====================
+    function openGuideModal() {
+        refreshMenuBestScores();
+        document.getElementById('guide-modal').classList.remove('hidden');
+    }
+
+    function closeGuideModal() {
+        document.getElementById('guide-modal').classList.add('hidden');
+    }
+
+    function resetHighScores() {
+        highScores = { classic: 0, challenge: 0, time: 0 };
+        localStorage.removeItem('tetris_best_classic');
+        localStorage.removeItem('tetris_best_challenge');
+        localStorage.removeItem('tetris_best_time');
+        refreshMenuBestScores();
+    }
+
+    // ==================== HỆ THỐNG ĐÈ NÚT (HOLD-TO-SPAM ~20MS) ====================
+    // Mỗi nút khi bấm sẽ thực thi ngay 1 lần, và khi giữ sẽ lặp lại liên tục mỗi 20ms.
+    // Khoảng chờ khởi động ngắn (90ms) để người chơi vẫn có thể nhấp đơn chính xác mà không bị nhảy đúp ngoài ý muốn,
+    // sau đó khi đè giữ sẽ spam liên tục đúng chu kỳ 20ms.
+    const SPAM_INTERVAL_MS = 20;
+    const INITIAL_HOLD_DELAY_MS = 90;
+
+    const activeHoldTimers = {
+        left: { timeout: null, interval: null },
+        right: { timeout: null, interval: null },
+        down: { timeout: null, interval: null },
+        up: { timeout: null, interval: null }
+    };
+
+    function startHoldAction(key, actionFn, btnElement) {
+        stopHoldAction(key, btnElement);
+        if (!isRunning || isPaused || isGameOver) return;
+
+        if (btnElement) btnElement.classList.add('active-press');
+        // Thực hiện ngay lập tức khi vừa chạm
+        actionFn();
+
+        // Khi đè giữ: lặp lại liên tục mỗi 20ms
+        activeHoldTimers[key].timeout = setTimeout(() => {
+            activeHoldTimers[key].interval = setInterval(() => {
+                if (!isRunning || isPaused || isGameOver) {
+                    stopHoldAction(key, btnElement);
+                    return;
+                }
+                actionFn();
+            }, SPAM_INTERVAL_MS);
+        }, INITIAL_HOLD_DELAY_MS);
+    }
+
+    function stopHoldAction(key, btnElement) {
+        if (activeHoldTimers[key].timeout) {
+            clearTimeout(activeHoldTimers[key].timeout);
+            activeHoldTimers[key].timeout = null;
+        }
+        if (activeHoldTimers[key].interval) {
+            clearInterval(activeHoldTimers[key].interval);
+            activeHoldTimers[key].interval = null;
+        }
+        if (btnElement) btnElement.classList.remove('active-press');
+    }
+
+    function stopAllHoldTimers() {
+        stopHoldAction('left', document.getElementById('btn-left'));
+        stopHoldAction('right', document.getElementById('btn-right'));
+        stopHoldAction('down', document.getElementById('btn-down'));
+        stopHoldAction('up', document.getElementById('btn-up'));
+    }
+
+    // Gắn sự kiện Cảm ứng (Touch) và Chuột (Mouse) cho 4 nút trên màn hình
+    function bindHoldButton(btnId, keyName, actionFn) {
+        const btn = document.getElementById(btnId);
+
+        const onStart = (e) => {
+            e.preventDefault();
+            startHoldAction(keyName, actionFn, btn);
+        };
+
+        const onEnd = (e) => {
+            e.preventDefault();
+            stopHoldAction(keyName, btn);
+        };
+
+        btn.addEventListener('touchstart', onStart, { passive: false });
+        btn.addEventListener('touchend', onEnd, { passive: false });
+        btn.addEventListener('touchcancel', onEnd, { passive: false });
+
+        btn.addEventListener('mousedown', onStart);
+        btn.addEventListener('mouseup', onEnd);
+        btn.addEventListener('mouseleave', onEnd);
+    }
+
+    bindHoldButton('btn-left', 'left', () => playerMove(-1));
+    bindHoldButton('btn-right', 'right', () => playerMove(1));
+    bindHoldButton('btn-down', 'down', () => playerDrop(true));
+    bindHoldButton('btn-up', 'up', () => playerRotate());
+
+    // Hỗ trợ bàn phím máy tính: Mũi tên, WASD (đè nút 20ms) & Space (Rớt ngay lập tức)
+    const keysDown = {};
+
+    function getMappedAction(e) {
+        const code = e.code;
+        const key = e.key ? e.key.toLowerCase() : '';
+
+        if (code === 'ArrowLeft' || code === 'KeyA' || key === 'a') return 'left';
+        if (code === 'ArrowRight' || code === 'KeyD' || key === 'd') return 'right';
+        if (code === 'ArrowDown' || code === 'KeyS' || key === 's') return 'down';
+        if (code === 'ArrowUp' || code === 'KeyW' || key === 'w') return 'up';
+        if (code === 'Space' || key === ' ') return 'space';
+        return null;
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (!isRunning) return;
+
+        if (e.key === 'Escape' || e.key === 'p' || e.key === 'P') {
+            if (isPaused) resumeGame();
+            else pauseGame();
+            return;
+        }
+
+        if (isPaused || isGameOver) return;
+
+        const action = getMappedAction(e);
+        if (!action) return;
+
+        // Ngăn cuộn trang khi bấm phím mũi tên hoặc phím Space
+        e.preventDefault();
+
+        // Bỏ qua auto-repeat mặc định của hệ điều hành để dùng bộ spam 20ms chuẩn (hoặc tránh spam Space ngoài ý muốn)
+        if (keysDown[action]) return;
+        keysDown[action] = true;
+
+        if (action === 'space') {
+            playerHardDrop();
+        } else if (action === 'left') {
+            startHoldAction('left', () => playerMove(-1), document.getElementById('btn-left'));
+        } else if (action === 'right') {
+            startHoldAction('right', () => playerMove(1), document.getElementById('btn-right'));
+        } else if (action === 'down') {
+            startHoldAction('down', () => playerDrop(true), document.getElementById('btn-down'));
+        } else if (action === 'up') {
+            startHoldAction('up', () => playerRotate(), document.getElementById('btn-up'));
+        }
+    });
+
+    window.addEventListener('keyup', (e) => {
+        const action = getMappedAction(e);
+        if (!action) return;
+
+        keysDown[action] = false;
+
+        if (action === 'left') {
+            stopHoldAction('left', document.getElementById('btn-left'));
+        } else if (action === 'right') {
+            stopHoldAction('right', document.getElementById('btn-right'));
+        } else if (action === 'down') {
+            stopHoldAction('down', document.getElementById('btn-down'));
+        } else if (action === 'up') {
+            stopHoldAction('up', document.getElementById('btn-up'));
+        }
+    });
+
+    window.addEventListener('blur', () => {
+        for (let k in keysDown) keysDown[k] = false;
+        stopAllHoldTimers();
+    });
+
+    // Khởi tạo dữ liệu ban đầu khi tải trang
+    window.onload = function () {
+        refreshMenuBestScores();
+        drawGrid();
+        drawNextPreview();
+    };
+</script>
+
+</body>
+</html>
