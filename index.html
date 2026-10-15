@@ -111,6 +111,21 @@
             box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9), 0 0 15px rgba(0, 240, 255, 0.12);
             border-radius: 6px;
             display: block;
+            touch-action: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        #game-canvas.gesture-drag {
+            border-color: #00f0ff;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9), 0 0 22px rgba(0, 240, 255, 0.45);
+        }
+        #game-canvas.gesture-hold {
+            border-color: #f59e0b;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9), 0 0 22px rgba(245, 158, 11, 0.5);
+        }
+
+        /* Vùng cảm ứng toàn bộ khu vực bảng chơi */
+        #touch-play-zone {
+            touch-action: none;
         }
 
         /* Custom Range Slider */
@@ -276,15 +291,19 @@
         </div>
 
         <!-- Khu vực Giữa: Bảng chơi có lưới + Cột thông tin bên phải -->
-        <div class="flex-1 flex items-center justify-center gap-2.5 my-1.5 min-h-0 overflow-hidden">
+        <div id="touch-play-zone" class="flex-1 flex items-center justify-center gap-2.5 my-1.5 min-h-0 overflow-hidden relative cursor-pointer">
             
             <!-- Bảng Canvas Chính (10x20) có kẻ ô lưới -->
-            <div class="h-full flex items-center justify-center">
+            <div class="h-full flex flex-col items-center justify-center relative">
                 <canvas id="game-canvas" width="240" height="480"></canvas>
+                <!-- Badge hiển thị trạng thái thao tác ngón tay thời gian thực -->
+                <div id="gesture-status-pill" class="pointer-events-none mt-1 px-2.5 py-0.5 rounded-full bg-slate-900/90 border border-slate-700/80 text-[10px] font-cyber text-slate-400 tracking-wide transition-all duration-150">
+                    CHẠM: XOAY • RÊ: DI CHUYỂN • ĐÈ: XUỐNG
+                </div>
             </div>
 
             <!-- Cột phải: Ô Next Block + Score + Level + Lines -->
-            <div class="w-28 sm:w-32 flex flex-col justify-between h-full max-h-[480px] gap-2">
+            <div class="w-28 sm:w-32 flex flex-col justify-between h-full max-h-[480px] gap-1.5 pointer-events-none">
                 
                 <!-- Ô hiển thị Block tiếp theo -->
                 <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 flex flex-col items-center shadow-inner">
@@ -319,11 +338,11 @@
 
                 <!-- Chế độ Tăng Lv trong Challenge/Time -->
                 <div id="hud-level-lock-info" class="bg-slate-950/90 border border-slate-800/80 rounded-lg px-2 py-1.5 text-center">
-                    <div class="text-[9px] text-slate-400 leading-tight">
-                        Giữ nút: <span class="text-cyan-300 font-semibold">20ms/lần</span>
+                    <div class="text-[9px] text-cyan-300 leading-tight font-semibold">
+                        Cảm ứng: Chạm / Rê / Đè
                     </div>
                     <div class="text-[9px] text-amber-300/90 leading-tight mt-0.5 font-semibold">
-                        SPACE: Rớt ngay
+                        Nút giữ 20ms • SPACE: Rớt
                     </div>
                 </div>
             </div>
@@ -505,11 +524,12 @@
 
                 <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-1.5">
                     <div class="font-cyber text-purple-300 font-bold">ĐIỀU KHIỂN & ĐÈ NÚT 20MS</div>
-                    <p>• <strong>Mũi tên Trái / Phải (hoặc A / D):</strong> Dịch chuyển khối gạch ngang.</p>
-                    <p>• <strong>Mũi tên Lên (hoặc W):</strong> Chuyển hướng (Xoay khối gạch).</p>
-                    <p>• <strong>Mũi tên Xuống (hoặc S):</strong> Chạy nhanh xuống (cộng thêm điểm rơi nhanh).</p>
+                    <p>• <strong>Cảm ứng trực tiếp trên màn hình:</strong></p>
+                    <p class="pl-2 text-cyan-300">- <strong>Chạm nhẹ (Tap):</strong> Xoay khối gạch.</p>
+                    <p class="pl-2 text-cyan-300">- <strong>Đè và rê qua trái/phải:</strong> Khối gạch trượt mượt theo ngón tay (tự động khoá đè xuống để không bị dính).</p>
+                    <p class="pl-2 text-amber-300">- <strong>Đè giữ yên tại chỗ:</strong> Chạy nhanh xuống liên tục (20ms). Khi nhấc tay lên sau khi đè hoặc rê sẽ không tính là Tap.</p>
+                    <p>• <strong>4 Nút bấm & Bàn phím (Mũi tên / WASD):</strong> Hỗ trợ nhấn giữ với tốc độ lặp siêu nhanh <strong>20ms</strong>.</p>
                     <p>• <strong>Phím SPACE (Cách):</strong> Rớt xuống đáy ngay lập tức (Skip / Hard Drop).</p>
-                    <p>• <strong>Đè nút (Hold to spam):</strong> Cả 4 nút trên màn hình, phím Mũi tên và cụm phím <strong>WASD</strong> đều hỗ trợ nhấn giữ với tốc độ lặp siêu nhanh <strong>20ms</strong>.</p>
                 </div>
             </div>
 
@@ -1270,6 +1290,9 @@
         stopHoldAction('right', document.getElementById('btn-right'));
         stopHoldAction('down', document.getElementById('btn-down'));
         stopHoldAction('up', document.getElementById('btn-up'));
+        if (typeof cancelFingerGesture === 'function') {
+            cancelFingerGesture();
+        }
     }
 
     // Gắn sự kiện Cảm ứng (Touch) và Chuột (Mouse) cho 4 nút trên màn hình
@@ -1299,6 +1322,210 @@
     bindHoldButton('btn-right', 'right', () => playerMove(1));
     bindHoldButton('btn-down', 'down', () => playerDrop(true));
     bindHoldButton('btn-up', 'up', () => playerRotate());
+
+    // ==================== HỆ THỐNG CẢM ỨNG NGÓN TAY TRỰC TIẾP (TAP / DRAG / HOLD) ====================
+    // Quy tắc tách biệt tuyệt đối:
+    // 1. RÊ (DRAG): Khi ngón tay dịch ngang >= ngưỡng Deadzone (10px), khoá ngay sang trạng thái 'DRAG',
+    //    huỷ bộ đếm Đè (Hold) để không bị rơi xuống ngoài ý muốn khi đang căn cột trái/phải.
+    //    Khối gạch đi theo ngón tay từng ô lưới tỉ lệ 1:1 với chiều rộng thực tế của ô trên màn hình.
+    // 2. ĐÈ (HOLD): Nếu giữ yên ngón tay (không rê ngang quá ngưỡng) sau 210ms -> kích hoạt 'HOLD'
+    //    và chạy nhanh xuống với tốc độ 20ms/lần.
+    // 3. CHẠM (TAP): Chỉ xoay khối khi nhấc tay lên MÀ CHƯA TỪNG vào trạng thái 'DRAG' và CHƯA TỪNG vào 'HOLD',
+    //    đồng thời tổng độ lệch di chuyển nhỏ (< 10px). Đảm bảo đè hoặc rê rồi nhấc tay lên KHÔNG BAO GIỜ bị tính là Tap.
+    const touchZone = document.getElementById('touch-play-zone');
+    const gesturePill = document.getElementById('gesture-status-pill');
+
+    const HOLD_TRIGGER_DELAY_MS = 210; // Thời gian chờ phân biệt giữa Tap/Bắt đầu Rê với Đè giữ
+    const TAP_MAX_MOVEMENT_PX = 10;    // Độ lệch tối đa cho phép của 1 cú Tap
+
+    let gestureState = {
+        active: false,
+        pointerId: null,
+        mode: 'NONE', // 'PENDING' | 'DRAG' | 'HOLD'
+        startX: 0,
+        startY: 0,
+        lastStepX: 0,
+        maxDistanceMoved: 0,
+        holdTimeout: null,
+        holdInterval: null
+    };
+
+    function updateGestureIndicator(modeText, styleType) {
+        if (!gesturePill) return;
+        gesturePill.textContent = modeText;
+        canvas.classList.remove('gesture-drag', 'gesture-hold');
+
+        if (styleType === 'drag') {
+            canvas.classList.add('gesture-drag');
+            gesturePill.className = 'pointer-events-none mt-1 px-2.5 py-0.5 rounded-full bg-cyan-950/90 border border-cyan-400 text-[10px] font-cyber text-cyan-300 tracking-wide transition-all duration-75';
+        } else if (styleType === 'hold') {
+            canvas.classList.add('gesture-hold');
+            gesturePill.className = 'pointer-events-none mt-1 px-2.5 py-0.5 rounded-full bg-amber-950/90 border border-amber-400 text-[10px] font-cyber text-amber-300 tracking-wide transition-all duration-75';
+        } else if (styleType === 'tap') {
+            gesturePill.className = 'pointer-events-none mt-1 px-2.5 py-0.5 rounded-full bg-purple-950/90 border border-purple-400 text-[10px] font-cyber text-purple-300 tracking-wide transition-all duration-75';
+        } else {
+            gesturePill.className = 'pointer-events-none mt-1 px-2.5 py-0.5 rounded-full bg-slate-900/90 border border-slate-700/80 text-[10px] font-cyber text-slate-400 tracking-wide transition-all duration-150';
+        }
+    }
+
+    function clearGestureHoldTimers() {
+        if (gestureState.holdTimeout) {
+            clearTimeout(gestureState.holdTimeout);
+            gestureState.holdTimeout = null;
+        }
+        if (gestureState.holdInterval) {
+            clearInterval(gestureState.holdInterval);
+            gestureState.holdInterval = null;
+        }
+        const btnDown = document.getElementById('btn-down');
+        if (btnDown) btnDown.classList.remove('active-press');
+    }
+
+    function cancelFingerGesture() {
+        clearGestureHoldTimers();
+        gestureState.active = false;
+        gestureState.pointerId = null;
+        gestureState.mode = 'NONE';
+        updateGestureIndicator('CHẠM: XOAY • RÊ: DI CHUYỂN • ĐÈ: XUỐNG', 'idle');
+    }
+
+    // Lấy kích thước 1 cột thực tế hiển thị trên màn hình để rê ngón tay khớp 1:1 với từng ô lưới
+    function getRenderedColWidthPx() {
+        const rect = canvas.getBoundingClientRect();
+        if (!rect || rect.width <= 0) return BLOCK_SIZE;
+        return Math.max(16, rect.width / COLS);
+    }
+
+    touchZone.addEventListener('pointerdown', (e) => {
+        if (!isRunning || isPaused || isGameOver) return;
+        // Chỉ nhận chuột trái hoặc 1 ngón tay chính
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        if (gestureState.active) return;
+
+        e.preventDefault();
+        try {
+            touchZone.setPointerCapture(e.pointerId);
+        } catch (err) {}
+
+        gestureState.active = true;
+        gestureState.pointerId = e.pointerId;
+        gestureState.mode = 'PENDING';
+        gestureState.startX = e.clientX;
+        gestureState.startY = e.clientY;
+        gestureState.lastStepX = e.clientX;
+        gestureState.maxDistanceMoved = 0;
+
+        clearGestureHoldTimers();
+
+        // Hẹn giờ kích hoạt chế độ ĐÈ (Hold chạy nhanh xuống) nếu người chơi giữ yên ngón tay
+        gestureState.holdTimeout = setTimeout(() => {
+            if (!gestureState.active || gestureState.mode !== 'PENDING') return;
+            if (!isRunning || isPaused || isGameOver) return;
+
+            // Đã xác nhận là ĐÈ GIỮ -> Khoá sang trạng thái 'HOLD' (khi nhấc tay sẽ KHÔNG xoay)
+            gestureState.mode = 'HOLD';
+            updateGestureIndicator('ĐANG ĐÈ: CHẠY NHANH XUỐNG (20MS)', 'hold');
+
+            const btnDown = document.getElementById('btn-down');
+            if (btnDown) btnDown.classList.add('active-press');
+
+            // Thực hiện rơi nhanh ngay lập tức và lặp mỗi 20ms
+            playerDrop(true);
+            gestureState.holdInterval = setInterval(() => {
+                if (!isRunning || isPaused || isGameOver || gestureState.mode !== 'HOLD') {
+                    clearGestureHoldTimers();
+                    return;
+                }
+                playerDrop(true);
+            }, SPAM_INTERVAL_MS);
+        }, HOLD_TRIGGER_DELAY_MS);
+    });
+
+    touchZone.addEventListener('pointermove', (e) => {
+        if (!gestureState.active || e.pointerId !== gestureState.pointerId) return;
+        if (!isRunning || isPaused || isGameOver) {
+            cancelFingerGesture();
+            return;
+        }
+
+        e.preventDefault();
+
+        const totalDx = e.clientX - gestureState.startX;
+        const totalDy = e.clientY - gestureState.startY;
+        const dist = Math.hypot(totalDx, totalDy);
+        if (dist > gestureState.maxDistanceMoved) {
+            gestureState.maxDistanceMoved = dist;
+        }
+
+        const colWidth = getRenderedColWidthPx();
+
+        // Nếu đang ở trạng thái chờ (PENDING) hoặc thậm chí vừa bắt đầu, kiểm tra xem người chơi có RÊ NGANG không
+        if (gestureState.mode === 'PENDING') {
+            // Nếu dịch ngang vượt ngưỡng Deadzone -> chuyển ngay sang chế độ RÊ (DRAG) và HUỶ bộ đếm ĐÈ (HOLD)
+            if (Math.abs(totalDx) >= TAP_MAX_MOVEMENT_PX) {
+                clearGestureHoldTimers();
+                gestureState.mode = 'DRAG';
+                updateGestureIndicator('ĐANG RÊ NGANG: DI CHUYỂN TRÁI / PHẢI', 'drag');
+            }
+        } else if (gestureState.mode === 'HOLD') {
+            // Nếu đang ĐÈ xuống mà người chơi chủ động kéo ngang rõ rệt (> 1.15 ô) -> tự động ngắt rơi xuống và chuyển sang RÊ ngang để không bị dính!
+            if (Math.abs(e.clientX - gestureState.lastStepX) >= colWidth * 1.15) {
+                clearGestureHoldTimers();
+                gestureState.mode = 'DRAG';
+                updateGestureIndicator('ĐANG RÊ NGANG: DI CHUYỂN TRÁI / PHẢI', 'drag');
+            }
+        }
+
+        // Xử lý di chuyển khối gạch mượt mà theo ngón tay khi ở chế độ DRAG
+        if (gestureState.mode === 'DRAG') {
+            const deltaStepX = e.clientX - gestureState.lastStepX;
+            const steps = Math.trunc(deltaStepX / colWidth);
+
+            if (steps !== 0) {
+                const dir = steps > 0 ? 1 : -1;
+                const count = Math.abs(steps);
+                for (let i = 0; i < count; i++) {
+                    playerMove(dir);
+                }
+                // Cập nhật mốc neo X theo đúng số ô đã dịch chuyển để rê qua lại mượt 1:1
+                gestureState.lastStepX += steps * colWidth;
+            }
+        }
+    });
+
+    function handleGestureEnd(e) {
+        if (!gestureState.active || e.pointerId !== gestureState.pointerId) return;
+        e.preventDefault();
+
+        const endedMode = gestureState.mode;
+        const maxMoved = gestureState.maxDistanceMoved;
+
+        // Dọn dẹp bộ đếm Đè ngay khi nhấc tay
+        clearGestureHoldTimers();
+        gestureState.active = false;
+        gestureState.pointerId = null;
+        gestureState.mode = 'NONE';
+
+        // QUY TẮC QUAN TRỌNG:
+        // Chỉ tính là TAP (Xoay khối) nếu:
+        // 1. Chưa từng vào chế độ DRAG (rê) VÀ chưa từng vào chế độ HOLD (đè) -> tức là endedMode === 'PENDING'
+        // 2. Tổng khoảng cách ngón tay xê dịch nhỏ hơn ngưỡng TAP_MAX_MOVEMENT_PX (10px)
+        if (endedMode === 'PENDING' && maxMoved < TAP_MAX_MOVEMENT_PX && isRunning && !isPaused && !isGameOver) {
+            playerRotate();
+            updateGestureIndicator('CHẠM NHẸ: XOAY KHỐI', 'tap');
+            setTimeout(() => {
+                if (!gestureState.active) {
+                    updateGestureIndicator('CHẠM: XOAY • RÊ: DI CHUYỂN • ĐÈ: XUỐNG', 'idle');
+                }
+            }, 350);
+        } else {
+            // Nếu vừa ĐÈ hoặc vừa RÊ xong rồi nhấc tay lên -> Tuyệt đối KHÔNG xoay, trả về trạng thái nghỉ
+            updateGestureIndicator('CHẠM: XOAY • RÊ: DI CHUYỂN • ĐÈ: XUỐNG', 'idle');
+        }
+    }
+
+    touchZone.addEventListener('pointerup', handleGestureEnd);
+    touchZone.addEventListener('pointercancel', cancelFingerGesture);
 
     // Hỗ trợ bàn phím máy tính: Mũi tên, WASD (đè nút 20ms) & Space (Rớt ngay lập tức)
     const keysDown = {};
