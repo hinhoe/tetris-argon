@@ -172,15 +172,27 @@
 
     <!-- ==================== 1. MÀN HÌNH CHÍNH (INDEX / MAIN MENU) ==================== -->
     <div id="menu-screen" class="flex flex-col justify-between h-full p-5 z-10">
-        <!-- Header Logo -->
-        <div class="text-center mt-2">
+        <!-- Header Logo & Nút Bật/Tắt Âm Thanh -->
+        <div class="text-center mt-1 relative">
+            <!-- Cụm nút bật/tắt BGM & SFX trên màn hình chính -->
+            <div class="flex justify-end gap-2 mb-2">
+                <button onclick="toggleBGM()" id="menu-bgm-btn" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/90 border border-cyan-500/40 text-cyan-300 text-[11px] font-cyber font-bold shadow-[0_0_10px_rgba(0,240,255,0.15)] active:scale-95 transition">
+                    <i id="menu-bgm-icon" class="fa-solid fa-music"></i>
+                    <span id="menu-bgm-text">BGM: ON</span>
+                </button>
+                <button onclick="toggleSFX()" id="menu-sfx-btn" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/90 border border-purple-500/40 text-purple-300 text-[11px] font-cyber font-bold shadow-[0_0_10px_rgba(168,85,247,0.15)] active:scale-95 transition">
+                    <i id="menu-sfx-icon" class="fa-solid fa-volume-high"></i>
+                    <span id="menu-sfx-text">SFX: ON</span>
+                </button>
+            </div>
+
             <div class="inline-block px-3 py-0.5 rounded-full bg-cyan-950/60 border border-cyan-500/40 text-cyan-300 text-[11px] font-semibold tracking-widest uppercase mb-1">
                 Portrait Arcade System
             </div>
             <h1 class="font-cyber text-4xl sm:text-5xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 drop-shadow-[0_0_15px_rgba(0,240,255,0.4)]">
                 TETRIS
             </h1>
-            <p class="text-xs text-slate-400 mt-1">Lưới trực quan • Đè nút siêu tốc 20ms • Lv 1–99</p>
+            <p class="text-xs text-slate-400 mt-1">Lưới trực quan • Đè nút 20ms • Synth Audio</p>
         </div>
 
         <!-- 4 Ô Lựa Chọn Chế Độ -->
@@ -270,24 +282,32 @@
     <!-- ==================== 2. MÀN HÌNH CHƠI GAME (GAME SCREEN) ==================== -->
     <div id="game-screen" class="hidden flex-col justify-between h-full w-full p-2.5 sm:p-3 select-none z-10">
         
-        <!-- Top Header: Tên Chế Độ, Đồng hồ 10p & Nút Pause ở góc trên phải -->
-        <div class="flex items-center justify-between bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-1.5 shrink-0">
-            <div class="flex items-center gap-2">
-                <span id="hud-mode-badge" class="px-2 py-0.5 text-[10px] font-cyber font-bold rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+        <!-- Top Header: Tên Chế Độ, Đồng hồ 10p, BGM/SFX & Nút Pause ở góc trên phải -->
+        <div class="flex items-center justify-between bg-slate-900/90 border border-slate-800 rounded-xl px-2.5 py-1.5 shrink-0 gap-1.5">
+            <div class="flex items-center gap-1.5 min-w-0">
+                <span id="hud-mode-badge" class="px-2 py-0.5 text-[10px] font-cyber font-bold rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 truncate">
                     CLASSIC
                 </span>
                 <!-- Đồng hồ đếm ngược 10:00 (Hiện khi chơi Time Mode) -->
-                <div id="hud-timer-box" class="hidden items-center gap-1.5 bg-amber-500/20 border border-amber-500/50 px-2.5 py-0.5 rounded-md">
-                    <i class="fa-regular fa-clock text-amber-400 text-xs animate-pulse"></i>
+                <div id="hud-timer-box" class="hidden items-center gap-1 bg-amber-500/20 border border-amber-500/50 px-2 py-0.5 rounded-md shrink-0">
+                    <i class="fa-regular fa-clock text-amber-400 text-[11px] animate-pulse"></i>
                     <span id="hud-timer" class="font-cyber font-bold text-xs text-amber-300">10:00</span>
                 </div>
             </div>
 
-            <!-- Nút Pause ở góc trên phải màn hình -->
-            <button id="btn-pause" onclick="pauseGame()" class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-cyan-300 border border-cyan-500/40 rounded-lg px-3 py-1.5 text-xs font-cyber font-bold shadow-[0_0_10px_rgba(0,240,255,0.2)] transition">
-                <i class="fa-solid fa-pause"></i>
-                <span>PAUSE</span>
-            </button>
+            <!-- Cụm nút Âm thanh nhanh & Nút Pause ở góc trên phải màn hình -->
+            <div class="flex items-center gap-1.5 shrink-0">
+                <button onclick="toggleBGM()" id="hud-bgm-btn" title="Bật/Tắt Nhạc Nền (M)" class="w-8 h-8 flex items-center justify-center bg-slate-800 hover:bg-slate-700 active:scale-95 text-cyan-300 border border-cyan-500/40 rounded-lg text-xs transition">
+                    <i id="hud-bgm-icon" class="fa-solid fa-music"></i>
+                </button>
+                <button onclick="toggleSFX()" id="hud-sfx-btn" title="Bật/Tắt Hiệu Ứng Âm Thanh (N)" class="w-8 h-8 flex items-center justify-center bg-slate-800 hover:bg-slate-700 active:scale-95 text-purple-300 border border-purple-500/40 rounded-lg text-xs transition">
+                    <i id="hud-sfx-icon" class="fa-solid fa-volume-high"></i>
+                </button>
+                <button id="btn-pause" onclick="pauseGame()" class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-cyan-300 border border-cyan-500/40 rounded-lg px-2.5 py-1.5 text-xs font-cyber font-bold shadow-[0_0_10px_rgba(0,240,255,0.2)] transition">
+                    <i class="fa-solid fa-pause"></i>
+                    <span>PAUSE</span>
+                </button>
+            </div>
         </div>
 
         <!-- Khu vực Giữa: Bảng chơi có lưới + Cột thông tin bên phải -->
@@ -441,7 +461,19 @@
                 <i class="fa-solid fa-pause"></i>
             </div>
             <h2 class="font-cyber text-2xl font-black text-white tracking-wider">TẠM DỪNG</h2>
-            <p class="text-xs text-slate-400 mt-1 mb-6">Trò chơi đang được tạm ngưng</p>
+            <p class="text-xs text-slate-400 mt-1 mb-4">Trò chơi đang được tạm ngưng</p>
+
+            <!-- Tuỳ chỉnh Nhạc nền (BGM) & Hiệu ứng (SFX) ngay trong Pause Popup -->
+            <div class="grid grid-cols-2 gap-2.5 mb-4">
+                <button onclick="toggleBGM()" id="pause-bgm-btn" class="py-2.5 px-2 rounded-xl font-cyber text-[11px] font-bold bg-slate-950 border border-cyan-500/40 text-cyan-300 flex items-center justify-center gap-1.5 active:scale-95 transition">
+                    <i id="pause-bgm-icon" class="fa-solid fa-music"></i>
+                    <span id="pause-bgm-text">BGM: ON</span>
+                </button>
+                <button onclick="toggleSFX()" id="pause-sfx-btn" class="py-2.5 px-2 rounded-xl font-cyber text-[11px] font-bold bg-slate-950 border border-purple-500/40 text-purple-300 flex items-center justify-center gap-1.5 active:scale-95 transition">
+                    <i id="pause-sfx-icon" class="fa-solid fa-volume-high"></i>
+                    <span id="pause-sfx-text">SFX: ON</span>
+                </button>
+            </div>
 
             <div class="flex flex-col gap-3">
                 <button onclick="resumeGame()" class="w-full py-3.5 rounded-xl font-cyber font-bold text-sm bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-[0_0_15px_rgba(0,240,255,0.4)] active:scale-95 transition">
@@ -547,6 +579,413 @@
 </div>
 
 <script>
+    // ==================== HỆ THỐNG ÂM THANH SYNTHWAVE & CHIPTUNE (WEB AUDIO API) ====================
+    // Tạo hoàn toàn bằng Web Audio API: Nhạc nền Korobeiniki Synthwave + Đầy đủ hiệu ứng SFX
+    const SoundEngine = {
+        ctx: null,
+        bgmEnabled: localStorage.getItem('tetris_bgm_enabled') !== 'false',
+        sfxEnabled: localStorage.getItem('tetris_sfx_enabled') !== 'false',
+        bgmPlaying: false,
+        bgmTimer: null,
+        noteIndex: 0,
+        lastMoveSfxTime: 0,
+        lastSoftDropSfxTime: 0,
+
+        // Khởi tạo và mở khoá AudioContext khi người chơi tương tác
+        init() {
+            if (!this.ctx) {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtx) {
+                    this.ctx = new AudioCtx();
+                }
+            }
+            if (this.ctx && this.ctx.state === 'suspended') {
+                this.ctx.resume();
+            }
+        },
+
+        // Tần số các nốt nhạc chuẩn
+        freqMap: {
+            'A2': 110.00, 'B2': 123.47, 'C3': 130.81, 'D3': 146.83, 'E3': 164.81, 'F3': 174.61, 'G3': 196.00, 'G#3': 207.65,
+            'A3': 220.00, 'B3': 246.94, 'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'G#4': 415.30,
+            'A4': 440.00, 'B4': 493.88, 'C5': 523.25, 'D5': 587.33, 'E5': 659.25, 'F5': 698.46, 'G5': 783.99, 'A5': 880.00,
+            'REST': 0
+        },
+
+        // Giai điệu Tetris Korobeiniki (Lead + Bassline)
+        // [Nốt chính, Nốt Bass, Độ dài phách (1 = móc đơn)]
+        melody: [
+            // Đoạn A1
+            ['E5', 'E3', 2], ['B4', 'E3', 1], ['C5', 'E3', 1], ['D5', 'E3', 2], ['C5', 'E3', 1], ['B4', 'E3', 1],
+            ['A4', 'A2', 2], ['A4', 'A2', 1], ['C5', 'A2', 1], ['E5', 'A2', 2], ['D5', 'A2', 1], ['C5', 'A2', 1],
+            ['B4', 'G#3', 2], ['B4', 'G#3', 1], ['C5', 'G#3', 1], ['D5', 'E3', 2], ['E5', 'E3', 2],
+            ['C5', 'A2', 2], ['A4', 'A2', 2], ['A4', 'A2', 2], ['REST', 'A2', 2],
+            // Đoạn B1
+            ['REST', 'D3', 1], ['D5', 'D3', 2], ['F5', 'D3', 1], ['A5', 'D3', 2], ['G5', 'D3', 1], ['F5', 'D3', 1],
+            ['E5', 'C3', 3], ['C5', 'C3', 1], ['E5', 'C3', 2], ['D5', 'C3', 1], ['C5', 'C3', 1],
+            ['B4', 'G3', 2], ['B4', 'G3', 1], ['C5', 'G3', 1], ['D5', 'E3', 2], ['E5', 'E3', 2],
+            ['C5', 'A2', 2], ['A4', 'A2', 2], ['A4', 'A2', 2], ['REST', 'A2', 2],
+            // Đoạn C (Synth Arpeggio Bridge)
+            ['E4', 'A2', 4], ['C4', 'A2', 4], ['D4', 'G#3', 4], ['B3', 'E3', 4],
+            ['C4', 'A2', 4], ['A3', 'A2', 4], ['G#3', 'E3', 4], ['B3', 'E3', 4],
+            ['E4', 'A2', 4], ['C4', 'A2', 4], ['D4', 'G#3', 4], ['B3', 'E3', 4],
+            ['C4', 'A2', 2], ['E4', 'A2', 2], ['A4', 'A2', 2], ['A4', 'A2', 2], ['G#4', 'E3', 6], ['REST', 'E3', 2]
+        ],
+
+        // Phát 1 nốt của BGM
+        playBGMNote(leadNote, bassNote, durationSec) {
+            if (!this.ctx || !this.bgmEnabled) return;
+            const now = this.ctx.currentTime;
+
+            // Lead synth (Square + Lowpass filter nhẹ cho âm thanh ấm, rõ)
+            const leadFreq = this.freqMap[leadNote] || 0;
+            if (leadFreq > 0) {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(leadFreq, now);
+
+                gain.gain.setValueAtTime(0.001, now);
+                gain.gain.linearRampToValueAtTime(0.05, now + 0.015);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + durationSec * 0.92);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + durationSec);
+            }
+
+            // Bassline synth (Triangle wave tạo nhịp nền)
+            const bassFreq = this.freqMap[bassNote] || 0;
+            if (bassFreq > 0) {
+                const bassOsc = this.ctx.createOscillator();
+                const bassGain = this.ctx.createGain();
+                bassOsc.type = 'triangle';
+                bassOsc.frequency.setValueAtTime(bassFreq, now);
+
+                bassGain.gain.setValueAtTime(0.001, now);
+                bassGain.gain.linearRampToValueAtTime(0.08, now + 0.01);
+                bassGain.gain.exponentialRampToValueAtTime(0.001, now + Math.min(durationSec * 0.85, 0.28));
+
+                bassOsc.connect(bassGain);
+                bassGain.connect(this.ctx.destination);
+                bassOsc.start(now);
+                bassOsc.stop(now + durationSec);
+            }
+        },
+
+        // Vòng lặp phát BGM tự điều chỉnh tốc độ nhẹ theo Level hiện tại
+        scheduleNextBGM() {
+            if (!this.bgmPlaying || !this.bgmEnabled || !isRunning || isPaused || isGameOver) return;
+            this.init();
+
+            const step = this.melody[this.noteIndex];
+            const [lead, bass, beats] = step;
+
+            // Tempo tăng nhẹ khi Level cao (Lv 1: 145ms/phách -> Lv 99: 105ms/phách)
+            const speedFactor = Math.min(1, (level - 1) / 98);
+            const baseUnitMs = Math.round(145 - speedFactor * 40);
+            const durationMs = beats * baseUnitMs;
+
+            this.playBGMNote(lead, bass, durationMs / 1000);
+            this.noteIndex = (this.noteIndex + 1) % this.melody.length;
+
+            this.bgmTimer = setTimeout(() => {
+                this.scheduleNextBGM();
+            }, durationMs);
+        },
+
+        startBGM(resetIndex = false) {
+            this.init();
+            if (resetIndex) this.noteIndex = 0;
+            this.stopBGM();
+            if (!this.bgmEnabled || !isRunning || isPaused || isGameOver) return;
+            this.bgmPlaying = true;
+            this.scheduleNextBGM();
+        },
+
+        stopBGM() {
+            this.bgmPlaying = false;
+            if (this.bgmTimer) {
+                clearTimeout(this.bgmTimer);
+                this.bgmTimer = null;
+            }
+        },
+
+        // ==================== CÁC HIỆU ỨNG ÂM THANH (SFX) ====================
+        // 1. Âm thanh bấm nút giao diện (UI Click)
+        playUIClick() {
+            if (!this.sfxEnabled) return;
+            this.init();
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(520, now);
+            osc.frequency.exponentialRampToValueAtTime(780, now + 0.045);
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.05);
+        },
+
+        // 2. Âm thanh di chuyển Trái / Phải (Có giới hạn tần suất khi giữ đè 20ms)
+        playMove() {
+            if (!this.sfxEnabled) return;
+            const perfNow = performance.now();
+            if (perfNow - this.lastMoveSfxTime < 35) return;
+            this.lastMoveSfxTime = perfNow;
+
+            this.init();
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(300, now);
+            osc.frequency.exponentialRampToValueAtTime(420, now + 0.03);
+            gain.gain.setValueAtTime(0.06, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.035);
+        },
+
+        // 3. Âm thanh Xoay khối gạch (Rotate)
+        playRotate() {
+            if (!this.sfxEnabled) return;
+            this.init();
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(380, now);
+            osc.frequency.exponentialRampToValueAtTime(680, now + 0.065);
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.065);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.07);
+        },
+
+        // 4. Âm thanh chạy nhanh xuống (Soft Drop - giới hạn để không bị rè khi spam 20ms)
+        playSoftDrop() {
+            if (!this.sfxEnabled) return;
+            const perfNow = performance.now();
+            if (perfNow - this.lastSoftDropSfxTime < 45) return;
+            this.lastSoftDropSfxTime = perfNow;
+
+            this.init();
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(210, now);
+            osc.frequency.exponentialRampToValueAtTime(140, now + 0.025);
+            gain.gain.setValueAtTime(0.045, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.03);
+        },
+
+        // 5. Âm thanh cố định khối gạch (Piece Lock)
+        playLock() {
+            if (!this.sfxEnabled) return;
+            this.init();
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(160, now);
+            osc.frequency.exponentialRampToValueAtTime(65, now + 0.07);
+            gain.gain.setValueAtTime(0.11, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.075);
+        },
+
+        // 6. Âm thanh rớt tức thì bằng phím Space (Hard Drop)
+        playHardDrop() {
+            if (!this.sfxEnabled) return;
+            this.init();
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(320, now);
+            osc.frequency.exponentialRampToValueAtTime(55, now + 0.11);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.115);
+        },
+
+        // 7. Âm thanh ăn hàng (1-3 hàng: Arpeggio sáng | 4 hàng TETRIS: Hợp âm Fanfare hoành tráng)
+        playLineClear(count) {
+            if (!this.sfxEnabled) return;
+            this.init();
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+
+            const notes = count >= 4
+                ? [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98] // 4 Hàng TETRIS!
+                : [440.00, 554.37, 659.25, 880.00].slice(0, count + 1);
+
+            notes.forEach((freq, idx) => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = count >= 4 ? 'square' : 'triangle';
+                const startTime = now + idx * 0.055;
+                const dur = count >= 4 ? 0.18 : 0.12;
+
+                osc.frequency.setValueAtTime(freq, startTime);
+                gain.gain.setValueAtTime(0.001, startTime);
+                gain.gain.linearRampToValueAtTime(count >= 4 ? 0.085 : 0.09, startTime + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(startTime);
+                osc.stop(startTime + dur + 0.01);
+            });
+        },
+
+        // 8. Âm thanh lên cấp (Level Up)
+        playLevelUp() {
+            if (!this.sfxEnabled) return;
+            this.init();
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+            const chime = [587.33, 783.99, 987.77, 1174.66];
+            chime.forEach((freq, i) => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                const st = now + i * 0.06;
+                osc.frequency.setValueAtTime(freq, st);
+                gain.gain.setValueAtTime(0.07, st);
+                gain.gain.exponentialRampToValueAtTime(0.001, st + 0.16);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(st);
+                osc.stop(st + 0.17);
+            });
+        },
+
+        // 9. Âm thanh kết thúc ván chơi (Game Over hoặc Hết giờ 10 phút)
+        playGameOver(isTimeUp = false) {
+            if (!this.sfxEnabled) return;
+            this.init();
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+
+            const seq = isTimeUp
+                ? [523.25, 659.25, 783.99, 1046.50] // Hết giờ hoàn thành
+                : [440.00, 415.30, 392.00, 349.23, 293.66]; // Thua cuộc
+
+            seq.forEach((freq, idx) => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = isTimeUp ? 'triangle' : 'sawtooth';
+                const st = now + idx * 0.12;
+                const dur = idx === seq.length - 1 ? 0.35 : 0.14;
+                osc.frequency.setValueAtTime(freq, st);
+                gain.gain.setValueAtTime(0.07, st);
+                gain.gain.exponentialRampToValueAtTime(0.001, st + dur);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(st);
+                osc.stop(st + dur + 0.02);
+            });
+        }
+    };
+
+    // Cập nhật trạng thái hiển thị của các nút BGM & SFX trên toàn bộ màn hình
+    function updateAudioUI() {
+        const bgmOn = SoundEngine.bgmEnabled;
+        const sfxOn = SoundEngine.sfxEnabled;
+
+        // Menu buttons
+        const menuBgmText = document.getElementById('menu-bgm-text');
+        const menuBgmIcon = document.getElementById('menu-bgm-icon');
+        const menuBgmBtn = document.getElementById('menu-bgm-btn');
+        if (menuBgmText) menuBgmText.textContent = bgmOn ? 'BGM: ON' : 'BGM: OFF';
+        if (menuBgmIcon) menuBgmIcon.className = bgmOn ? 'fa-solid fa-music' : 'fa-solid fa-volume-xmark';
+        if (menuBgmBtn) menuBgmBtn.classList.toggle('opacity-50', !bgmOn);
+
+        const menuSfxText = document.getElementById('menu-sfx-text');
+        const menuSfxIcon = document.getElementById('menu-sfx-icon');
+        const menuSfxBtn = document.getElementById('menu-sfx-btn');
+        if (menuSfxText) menuSfxText.textContent = sfxOn ? 'SFX: ON' : 'SFX: OFF';
+        if (menuSfxIcon) menuSfxIcon.className = sfxOn ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-off';
+        if (menuSfxBtn) menuSfxBtn.classList.toggle('opacity-50', !sfxOn);
+
+        // HUD buttons
+        const hudBgmIcon = document.getElementById('hud-bgm-icon');
+        const hudBgmBtn = document.getElementById('hud-bgm-btn');
+        if (hudBgmIcon) hudBgmIcon.className = bgmOn ? 'fa-solid fa-music' : 'fa-solid fa-volume-xmark';
+        if (hudBgmBtn) hudBgmBtn.classList.toggle('opacity-50', !bgmOn);
+
+        const hudSfxIcon = document.getElementById('hud-sfx-icon');
+        const hudSfxBtn = document.getElementById('hud-sfx-btn');
+        if (hudSfxIcon) hudSfxIcon.className = sfxOn ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-off';
+        if (hudSfxBtn) hudSfxBtn.classList.toggle('opacity-50', !sfxOn);
+
+        // Pause Modal buttons
+        const pauseBgmText = document.getElementById('pause-bgm-text');
+        const pauseBgmIcon = document.getElementById('pause-bgm-icon');
+        const pauseBgmBtn = document.getElementById('pause-bgm-btn');
+        if (pauseBgmText) pauseBgmText.textContent = bgmOn ? 'BGM: ON' : 'BGM: OFF';
+        if (pauseBgmIcon) pauseBgmIcon.className = bgmOn ? 'fa-solid fa-music' : 'fa-solid fa-volume-xmark';
+        if (pauseBgmBtn) pauseBgmBtn.classList.toggle('opacity-50', !bgmOn);
+
+        const pauseSfxText = document.getElementById('pause-sfx-text');
+        const pauseSfxIcon = document.getElementById('pause-sfx-icon');
+        const pauseSfxBtn = document.getElementById('pause-sfx-btn');
+        if (pauseSfxText) pauseSfxText.textContent = sfxOn ? 'SFX: ON' : 'SFX: OFF';
+        if (pauseSfxIcon) pauseSfxIcon.className = sfxOn ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-off';
+        if (pauseSfxBtn) pauseSfxBtn.classList.toggle('opacity-50', !sfxOn);
+    }
+
+    function toggleBGM() {
+        SoundEngine.init();
+        SoundEngine.bgmEnabled = !SoundEngine.bgmEnabled;
+        localStorage.setItem('tetris_bgm_enabled', SoundEngine.bgmEnabled.toString());
+        SoundEngine.playUIClick();
+        updateAudioUI();
+
+        if (SoundEngine.bgmEnabled && isRunning && !isPaused && !isGameOver) {
+            SoundEngine.startBGM(false);
+        } else {
+            SoundEngine.stopBGM();
+        }
+    }
+
+    function toggleSFX() {
+        SoundEngine.init();
+        SoundEngine.sfxEnabled = !SoundEngine.sfxEnabled;
+        localStorage.setItem('tetris_sfx_enabled', SoundEngine.sfxEnabled.toString());
+        if (SoundEngine.sfxEnabled) {
+            SoundEngine.playUIClick();
+        }
+        updateAudioUI();
+    }
+
     // ==================== CẤU HÌNH BẢNG CHƠI & KHỐI TETROMINO ====================
     const COLS = 10;
     const ROWS = 20;
@@ -861,6 +1300,8 @@
         if (!success) {
             currentPiece.x = originalX;
             currentPiece.matrix = oldMatrix;
+        } else {
+            SoundEngine.playRotate();
         }
         drawBoardAndPiece();
     }
@@ -872,6 +1313,7 @@
         if (collide(board, currentPiece)) {
             currentPiece.x -= dir;
         } else {
+            SoundEngine.playMove();
             drawBoardAndPiece();
         }
     }
@@ -883,6 +1325,7 @@
             const targetLevel = Math.min(99, startLevel + bonusLevels);
             if (targetLevel > level) {
                 level = targetLevel;
+                SoundEngine.playLevelUp();
             }
         }
     }
@@ -905,6 +1348,7 @@
 
         if (rowCount > 0) {
             lines += rowCount;
+            SoundEngine.playLineClear(rowCount);
             // Điểm gốc khi ăn 1, 2, 3, 4 hàng + Hệ số cộng thêm theo Level hiện tại
             const basePoints = [0, 100, 250, 450, 800];
             const levelBonusMultiplier = 1 + (level - 1) * 0.15;
@@ -938,10 +1382,12 @@
         currentPiece.y++;
         if (collide(board, currentPiece)) {
             currentPiece.y--;
+            SoundEngine.playLock();
             merge(board, currentPiece);
             sweepLines();
             spawnPiece();
         } else if (isSoftDrop) {
+            SoundEngine.playSoftDrop();
             // Chạy nhanh bằng nút Xuống được cộng điểm theo Level
             score += Math.max(1, Math.floor(level / 10) + 1);
             updateLevelByScore();
@@ -961,6 +1407,8 @@
             currentPiece.y++;
             dropDistance++;
         }
+
+        SoundEngine.playHardDrop();
 
         // Cộng điểm thưởng khi rớt nhanh bằng Space theo quãng đường và Level
         if (dropDistance > 0) {
@@ -1047,6 +1495,7 @@
 
     // 1. Bắt đầu ngay Classic Mode (Lv 1 -> 99)
     function startClassicMode() {
+        SoundEngine.playUIClick();
         gameMode = 'classic';
         startLevel = 1;
         autoLevelUp = true;
@@ -1055,6 +1504,7 @@
 
     // 2 & 3. Mở hộp thoại chọn Level cho Challenge Mode hoặc Time Mode
     function openLevelSelector(mode) {
+        SoundEngine.playUIClick();
         pendingMode = mode;
         selectedStartLv = 1;
         document.getElementById('level-slider').value = 1;
@@ -1075,6 +1525,7 @@
     }
 
     function closeLevelSelector() {
+        SoundEngine.playUIClick();
         document.getElementById('level-select-modal').classList.add('hidden');
     }
 
@@ -1085,17 +1536,20 @@
     }
 
     function adjustSelectedLevel(delta) {
+        SoundEngine.playUIClick();
         const nextVal = Math.max(1, Math.min(99, selectedStartLv + delta));
         document.getElementById('level-slider').value = nextVal;
         onSliderChange(nextVal);
     }
 
     function setQuickLevel(lv) {
+        SoundEngine.playUIClick();
         document.getElementById('level-slider').value = lv;
         onSliderChange(lv);
     }
 
     function confirmStartSelectedMode() {
+        SoundEngine.playUIClick();
         gameMode = pendingMode;
         startLevel = selectedStartLv;
         autoLevelUp = document.getElementById('chk-auto-levelup').checked;
@@ -1124,19 +1578,19 @@
 
         if (gameMode === 'classic') {
             badge.textContent = 'CLASSIC MODE';
-            badge.className = 'px-2 py-0.5 text-[10px] font-cyber font-bold rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40';
+            badge.className = 'px-2 py-0.5 text-[10px] font-cyber font-bold rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 truncate';
             timerBox.classList.add('hidden');
             timerBox.classList.remove('flex');
             lvHint.textContent = '+1 Lv mỗi 500đ';
         } else if (gameMode === 'challenge') {
             badge.textContent = 'CHALLENGE';
-            badge.className = 'px-2 py-0.5 text-[10px] font-cyber font-bold rounded bg-purple-500/20 text-purple-300 border border-purple-500/40';
+            badge.className = 'px-2 py-0.5 text-[10px] font-cyber font-bold rounded bg-purple-500/20 text-purple-300 border border-purple-500/40 truncate';
             timerBox.classList.add('hidden');
             timerBox.classList.remove('flex');
             lvHint.textContent = autoLevelUp ? '+1 Lv mỗi 500đ' : `Cố định Lv ${startLevel}`;
         } else if (gameMode === 'time') {
             badge.textContent = 'TIME MODE';
-            badge.className = 'px-2 py-0.5 text-[10px] font-cyber font-bold rounded bg-amber-500/20 text-amber-300 border border-amber-500/40';
+            badge.className = 'px-2 py-0.5 text-[10px] font-cyber font-bold rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 truncate';
             timerBox.classList.remove('hidden');
             timerBox.classList.add('flex');
             document.getElementById('hud-timer').textContent = '10:00';
@@ -1154,6 +1608,7 @@
         spawnPiece();
         updateHUD();
         drawBoardAndPiece();
+        SoundEngine.startBGM(true);
 
         if (animationFrameId) cancelAnimationFrame(animationFrameId);
         lastTime = performance.now();
@@ -1163,28 +1618,35 @@
     // ==================== CHỨC NĂNG PAUSE / RESUME / RESTART / QUIT ====================
     function pauseGame() {
         if (!isRunning || isGameOver) return;
+        SoundEngine.playUIClick();
         isPaused = true;
         stopAllHoldTimers();
+        SoundEngine.stopBGM();
         document.getElementById('pause-modal').classList.remove('hidden');
     }
 
     function resumeGame() {
         if (!isRunning || isGameOver) return;
+        SoundEngine.playUIClick();
         isPaused = false;
         lastTime = performance.now();
         document.getElementById('pause-modal').classList.add('hidden');
+        SoundEngine.startBGM(false);
     }
 
     function restartGame() {
+        SoundEngine.playUIClick();
         document.getElementById('pause-modal').classList.add('hidden');
         document.getElementById('gameover-modal').classList.add('hidden');
         initAndStartGame();
     }
 
     function quitToMenu() {
+        SoundEngine.playUIClick();
         isRunning = false;
         isPaused = false;
         stopAllHoldTimers();
+        SoundEngine.stopBGM();
         if (animationFrameId) cancelAnimationFrame(animationFrameId);
 
         document.getElementById('pause-modal').classList.add('hidden');
@@ -1199,6 +1661,8 @@
         isGameOver = true;
         isRunning = false;
         stopAllHoldTimers();
+        SoundEngine.stopBGM();
+        SoundEngine.playGameOver(reason === 'timeup');
         if (animationFrameId) cancelAnimationFrame(animationFrameId);
 
         const titleEl = document.getElementById('gameover-title');
@@ -1223,15 +1687,18 @@
 
     // ==================== MODAL HƯỚNG DẪN & KỶ LỤC ====================
     function openGuideModal() {
+        SoundEngine.playUIClick();
         refreshMenuBestScores();
         document.getElementById('guide-modal').classList.remove('hidden');
     }
 
     function closeGuideModal() {
+        SoundEngine.playUIClick();
         document.getElementById('guide-modal').classList.add('hidden');
     }
 
     function resetHighScores() {
+        SoundEngine.playUIClick();
         highScores = { classic: 0, challenge: 0, time: 0 };
         localStorage.removeItem('tetris_best_classic');
         localStorage.removeItem('tetris_best_challenge');
@@ -1543,6 +2010,15 @@
     }
 
     window.addEventListener('keydown', (e) => {
+        if (e.key === 'm' || e.key === 'M') {
+            toggleBGM();
+            return;
+        }
+        if (e.key === 'n' || e.key === 'N') {
+            toggleSFX();
+            return;
+        }
+
         if (!isRunning) return;
 
         if (e.key === 'Escape' || e.key === 'p' || e.key === 'P') {
@@ -1601,6 +2077,7 @@
     // Khởi tạo dữ liệu ban đầu khi tải trang
     window.onload = function () {
         refreshMenuBestScores();
+        updateAudioUI();
         drawGrid();
         drawNextPreview();
     };
