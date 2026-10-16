@@ -1804,6 +1804,7 @@
 
     const HOLD_TRIGGER_DELAY_MS = 210; // Thời gian chờ phân biệt giữa Tap/Bắt đầu Rê với Đè giữ
     const TAP_MAX_MOVEMENT_PX = 10;    // Độ lệch tối đa cho phép của 1 cú Tap
+    const SWIPE_DROP_MIN_PX = 48;      // Quãng vuốt dọc tối thiểu để hard drop
 
     let gestureState = {
         active: false,
@@ -1812,6 +1813,7 @@
         startX: 0,
         startY: 0,
         lastStepX: 0,
+        dropTriggered: false,
         maxDistanceMoved: 0,
         holdTimeout: null,
         holdInterval: null
@@ -1880,6 +1882,7 @@
         gestureState.startX = e.clientX;
         gestureState.startY = e.clientY;
         gestureState.lastStepX = e.clientX;
+        gestureState.dropTriggered = false;
         gestureState.maxDistanceMoved = 0;
 
         clearGestureHoldTimers();
@@ -1926,7 +1929,17 @@
 
         const colWidth = getRenderedColWidthPx();
 
-        // Nếu đang ở trạng thái chờ (PENDING) hoặc thậm chí vừa bắt đầu, kiểm tra xem người chơi có RÊ NGANG không
+        // Vuốt nhanh xuống hard drop một lần, tương đương phím Space.
+        if (!gestureState.dropTriggered && totalDy >= SWIPE_DROP_MIN_PX && totalDy > Math.abs(totalDx) * 1.2) {
+            clearGestureHoldTimers();
+            gestureState.mode = 'DROP';
+            gestureState.dropTriggered = true;
+            playerHardDrop();
+            updateGestureIndicator('VUỐT XUỐNG: RƠI NGAY', 'tap');
+            return;
+        }
+
+        // Nếu đang ở trạng thái chờ, kiểm tra xem người chơi có RÊ NGANG không
         if (gestureState.mode === 'PENDING') {
             // Nếu dịch ngang vượt ngưỡng Deadzone -> chuyển ngay sang chế độ RÊ (DRAG) và HUỶ bộ đếm ĐÈ (HOLD)
             if (Math.abs(totalDx) >= TAP_MAX_MOVEMENT_PX) {
@@ -1966,6 +1979,7 @@
 
         const endedMode = gestureState.mode;
         const maxMoved = gestureState.maxDistanceMoved;
+        const dropTriggered = gestureState.dropTriggered;
 
         // Dọn dẹp bộ đếm Đè ngay khi nhấc tay
         clearGestureHoldTimers();
@@ -1977,7 +1991,14 @@
         // Chỉ tính là TAP (Xoay khối) nếu:
         // 1. Chưa từng vào chế độ DRAG (rê) VÀ chưa từng vào chế độ HOLD (đè) -> tức là endedMode === 'PENDING'
         // 2. Tổng khoảng cách ngón tay xê dịch nhỏ hơn ngưỡng TAP_MAX_MOVEMENT_PX (10px)
-        if (endedMode === 'PENDING' && maxMoved < TAP_MAX_MOVEMENT_PX && isRunning && !isPaused && !isGameOver) {
+        if (dropTriggered) {
+            updateGestureIndicator('VUỐT XUỐNG: RƠI NGAY', 'tap');
+            setTimeout(() => {
+                if (!gestureState.active) {
+                    updateGestureIndicator('CHẠM: XOAY • RÊ: DI CHUYỂN • ĐÈ: XUỐNG', 'idle');
+                }
+            }, 350);
+        } else if (endedMode === 'PENDING' && maxMoved < TAP_MAX_MOVEMENT_PX && isRunning && !isPaused && !isGameOver) {
             playerRotate();
             updateGestureIndicator('CHẠM NHẸ: XOAY KHỐI', 'tap');
             setTimeout(() => {
